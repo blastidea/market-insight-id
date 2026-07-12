@@ -1,0 +1,14 @@
+{
+  "name": "market-insight-id",
+  "version": "1.0.0",
+  "description": "Market Insight Indonesia Auto News",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "rss-parser": "^3.13.0",
+    "axios": "^1.11.0",
+    "cheerio": "^1.1.2"
+  }
+}
