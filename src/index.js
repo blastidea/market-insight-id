@@ -1,38 +1,21 @@
-const https = require("https");
+const axios = require("axios");
 
-function getPrice() {
-  return new Promise((resolve, reject) => {
-    https.get(
-      "https://api.binance.com/api/v3/ticker/price?symbol=PAXGUSDT",
-      (res) => {
-        let data = "";
+const API_KEY = process.env.TWELVE_API_KEY;
 
-        res.on("data", chunk => {
-          data += chunk;
-        });
+async function getGoldPrice() {
+  try {
+    const url = `https://api.twelvedata.com/price?symbol=XAU/USD&apikey=${API_KEY}`;
 
-        res.on("end", () => {
-          try {
-            const json = JSON.parse(data);
-            resolve(json.price);
-          } catch (err) {
-            reject(err);
-          }
-        });
-      }
-    ).on("error", reject);
-  });
+    const response = await axios.get(url);
+
+    console.log("=== Market Insight Indonesia ===");
+    console.log("System Running...");
+    console.log("XAU/USD Price:", response.data.price);
+    console.log("Data Engine OK");
+  } catch (error) {
+    console.error("ERROR:", error.response?.data || error.message);
+  }
 }
 
-async function main() {
-  console.log("=== Market Insight Indonesia ===");
-  console.log("System Running...");
-
-  const price = await getPrice();
-
-  console.log("XAUUSD Price:", price);
-  console.log("Data Engine OK");
-}
-
-main();
+getGoldPrice();main();
 
