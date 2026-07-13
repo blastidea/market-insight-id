@@ -1,8 +1,11 @@
-function filterMajorSwings(swings, type) {
+function filterMajorSwings(swings, type, atr) {
 
   if (!swings || swings.length < 2) {
     return swings;
   }
+
+  // Minimal jarak antar swing berdasarkan ATR
+  const minDistance = atr ? atr * 1.5 : 10;
 
   const filtered = [];
 
@@ -15,11 +18,10 @@ function filterMajorSwings(swings, type) {
 
     const last = filtered[filtered.length - 1];
 
-    const diffHours =
-      Math.abs(new Date(current.datetime) - new Date(last.datetime)) / 3600000;
+    const distance = Math.abs(current.price - last.price);
 
-    // Jika masih berdekatan (<6 jam), anggap satu swing
-    if (diffHours < 6) {
+    // Jika terlalu dekat, pilih swing yang lebih ekstrem
+    if (distance < minDistance) {
 
       if (type === "high") {
 
@@ -47,7 +49,7 @@ function filterMajorSwings(swings, type) {
 
 }
 
-function analyzeStructure(candles) {
+function analyzeStructure(candles, atr) {
 
   if (!candles || candles.length < 20) {
     return {
@@ -65,7 +67,7 @@ function analyzeStructure(candles) {
   }
 
   // Twelve Data: candle terbaru di index 0
-  // Dibalik agar urut dari lama -> baru
+  // Dibalik agar urut dari lama ke baru
   const history = [...candles].reverse();
 
   const lookback = 3;
@@ -73,6 +75,9 @@ function analyzeStructure(candles) {
   const swingHighs = [];
   const swingLows = [];
 
+  // ==========================
+  // Cari Swing High & Swing Low
+  // ==========================
   for (let i = lookback; i < history.length - lookback; i++) {
 
     const currentHigh = Number(history[i].high);
@@ -100,17 +105,21 @@ function analyzeStructure(candles) {
     }
 
     if (isSwingHigh) {
+
       swingHighs.push({
         price: currentHigh,
         datetime: history[i].datetime
       });
+
     }
 
     if (isSwingLow) {
+
       swingLows.push({
         price: currentLow,
         datetime: history[i].datetime
       });
+
     }
 
   }
@@ -118,8 +127,17 @@ function analyzeStructure(candles) {
   // ==========================
   // Filter Major Swing
   // ==========================
-  const majorHighs = filterMajorSwings(swingHighs, "high");
-  const majorLows = filterMajorSwings(swingLows, "low");
+  const majorHighs = filterMajorSwings(
+    swingHighs,
+    "high",
+    atr
+  );
+
+  const majorLows = filterMajorSwings(
+    swingLows,
+    "low",
+    atr
+  );
 
   const lastHigh = majorHighs.at(-1) || null;
   const prevHigh = majorHighs.at(-2) || null;
@@ -127,6 +145,9 @@ function analyzeStructure(candles) {
   const lastLow = majorLows.at(-1) || null;
   const prevLow = majorLows.at(-2) || null;
 
+  // ==========================
+  // Market Structure
+  // ==========================
   let structure = "Range";
   let bias = "Neutral";
 
