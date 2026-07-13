@@ -12,9 +12,9 @@ function analyzeExecution(
   choch,
   history,
   price,
-  atr
+  atr,
+  state
 ){
-
 
   let reason = [];
   let status = "WAIT";
