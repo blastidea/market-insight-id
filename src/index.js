@@ -557,17 +557,16 @@ console.log(
 
 
 // ==========================
-// RISK
+// RISK ENGINE
 // ==========================
 
-
-
 const risk = analyzeRisk(
- decision,
- orderBlock,
- liquidity,
- atr14,
- Number(last.close)
+  decision,
+  orderBlock,
+  market,
+  fvg,
+  Number(last.close),
+  atr14
 );
 
 
@@ -576,15 +575,33 @@ console.log("");
 console.log("RISK ENGINE");
 console.log("----------------------------");
 
-console.log("Action        :",risk.action);
-console.log("Reason        :",risk.reason);
-console.log("Risk Level    :",risk.riskLevel);
+console.log("Action        :", risk.action);
 
-console.log("Entry         :",risk.entry ?? "-");
-console.log("Stop Loss     :",risk.stopLoss ?? "-");
-console.log("Target        :",risk.target ?? "-");
-console.log("Risk Reward   :",risk.riskReward ?? "-");
+console.log("Reason        :", risk.reason);
 
+console.log("Risk Level    :", risk.riskLevel);
+
+
+console.log("");
+
+console.log("Entry         :", risk.entry);
+
+
+console.log("Stop Loss     :", risk.stopLoss);
+
+
+console.log("");
+
+console.log("Target TP1    :", risk.target.tp1);
+
+console.log("Target TP2    :", risk.target.tp2);
+
+console.log("Target TP3    :", risk.target.tp3);
+
+
+console.log("");
+
+console.log("Risk Reward   :", risk.riskReward);
     
     
   } catch (err) {
