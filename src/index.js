@@ -18,6 +18,10 @@ const {
   analyzeCHOCH
 } = require("./choch");
 
+const {
+  analyzeLiquidity
+} = require("./liquidity");
+
 
 async function main() {
 
@@ -341,8 +345,28 @@ console.log("Direction   :", choch.direction);
 console.log("Level       :", choch.level ?? "-");
 console.log("Status      :", choch.status);
 
+// ==========================
+// Liquidity
+// ==========================
+
     
-    
+  const liquidity = analyzeLiquidity(
+  data.history,
+  market,
+  bos,
+  atr14
+);
+
+
+console.log("");
+
+console.log("Liquidity Sweep");
+console.log("----------------------------");
+
+console.log("Type        :", liquidity.type);
+console.log("Level       :", liquidity.level ?? "-");
+console.log("Status      :", liquidity.status);
+console.log("Strength    :", liquidity.strength);
 
 
   } catch (err) {
