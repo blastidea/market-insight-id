@@ -10,399 +10,238 @@ function analyzeConfluence(
   atr
 ) {
 
-  let score = 50;
-
-  let bias = "NEUTRAL";
-  let setup = "WAIT";
+  let bullish = 0;
+  let bearish = 0;
 
 
-  // ==========================
   // Trend
-  // ==========================
-
-  if (trend.includes("Bullish")) {
-
-    score += 10;
-
-  }
-
-  if (trend.includes("Bearish")) {
-
-    score -= 10;
-
-  }
+  if (trend.includes("Bullish")) bullish += 10;
+  if (trend.includes("Bearish")) bearish += 10;
 
 
-
-  // ==========================
   // BOS
-  // ==========================
-
   if (bos) {
 
+    if (bos.direction === "Bullish")
+      bullish += 20;
 
-    if (bos.direction === "Bullish") {
-
-      score += 20;
-
-    }
-
-
-    if (bos.direction === "Bearish") {
-
-      score -= 20;
-
-    }
+    if (bos.direction === "Bearish")
+      bearish += 20;
 
   }
 
 
-
-  // ==========================
   // CHOCH
-  // ==========================
-
   if (choch) {
 
+    if (choch.direction === "Bullish")
+      bullish += 15;
 
-    if (choch.direction === "Bullish") {
-
-      score += 15;
-
-    }
-
-
-    if (choch.direction === "Bearish") {
-
-      score -= 15;
-
-    }
+    if (choch.direction === "Bearish")
+      bearish += 15;
 
   }
 
 
-
-  // ==========================
-  // Liquidity Sweep
-  // ==========================
-
+  // Liquidity
   if (liquidity) {
 
+    if (liquidity.type === "Sell Side Sweep")
+      bullish += 10;
 
-    if (
-      liquidity.type === "Sell Side Sweep"
-    ) {
-
-      score += 10;
-
-    }
-
-
-    if (
-      liquidity.type === "Buy Side Sweep"
-    ) {
-
-      score -= 10;
-
-    }
+    if (liquidity.type === "Buy Side Sweep")
+      bearish += 10;
 
   }
 
 
-
-
-  // ==========================
   // Order Block
-  // ==========================
-
   if (orderBlock) {
 
+    if (orderBlock.type === "Bullish")
+      bullish += 25;
 
-    if (
-      orderBlock.type === "Bullish"
-    ) {
-
-      score += 20;
-
-    }
+    if (orderBlock.type === "Bearish")
+      bearish += 25;
 
 
-    if (
-      orderBlock.type === "Bearish"
-    ) {
+    if (orderBlock.strength === "Strong") {
 
-      score -= 20;
+      if(orderBlock.type === "Bullish")
+        bullish += 10;
 
-    }
-
-
-
-    if (
-      orderBlock.strength === "Strong"
-    ) {
-
-
-      if (
-        orderBlock.type === "Bullish"
-      ) {
-
-        score += 10;
-
-      }
-
-
-      if (
-        orderBlock.type === "Bearish"
-      ) {
-
-        score -= 10;
-
-      }
+      if(orderBlock.type === "Bearish")
+        bearish += 10;
 
     }
 
   }
 
 
-
-
-
-  // ==========================
-  // Fair Value Gap
-  // ==========================
-
+  // FVG
   if (fvg) {
 
+    if(fvg.type === "Bullish")
+      bullish += 15;
 
-    if (
-      fvg.type === "Bullish"
-    ) {
-
-      score += 15;
-
-    }
-
-
-    if (
-      fvg.type === "Bearish"
-    ) {
-
-      score -= 15;
-
-    }
-
-
-    if (
-      fvg.strength === "Strong"
-    ) {
-
-      score += 5;
-
-    }
+    if(fvg.type === "Bearish")
+      bearish += 15;
 
   }
 
 
+  // Zone
+  if(zone) {
 
-
-  // ==========================
-  // Market Zone
-  // ==========================
-
-  if (zone) {
-
-
-    if (
+    if(
       zone.bias &&
       zone.bias.includes("BUY")
-    ) {
-
-      score += 10;
-
-    }
+    )
+      bullish += 10;
 
 
-    if (
+    if(
       zone.bias &&
       zone.bias.includes("SELL")
-    ) {
-
-      score -= 10;
-
-    }
-
+    )
+      bearish += 10;
 
   }
 
 
-
-
-
-  // ==========================
   // RSI
-  // ==========================
+  if(rsi <= 30)
+    bullish += 5;
 
-  if (rsi <= 30) {
-
-    score += 5;
-
-  }
-
-
-  if (rsi >= 70) {
-
-    score -= 5;
-
-  }
+  if(rsi >= 70)
+    bearish += 5;
 
 
 
-
-  // ==========================
-  // Normalize Score
-  // ==========================
-
-  if (score < 0) {
-
-    score = 0;
-
-  }
-
-
-  if (score > 100) {
-
-    score = 100;
-
-  }
-
-
-
-
-  // ==========================
   // Decision
-  // ==========================
+
+  let bias = "NEUTRAL";
+  let setup = "WAIT CONFIRMATION";
+  let confidence = 50;
 
 
-  if (score >= 70) {
-
+  if(bullish > bearish){
 
     bias = "BULLISH";
-
     setup = "BUY REACTION";
-
-
-  } 
-  else if (score <= 30) {
-
-
-    bias = "BEARISH";
-
-    setup = "SELL RETRACEMENT";
-
-
-  } 
-  else {
-
-
-    bias = "NEUTRAL";
-
-    setup = "WAIT CONFIRMATION";
-
+    confidence = bullish;
 
   }
 
 
+  if(bearish > bullish){
+
+    bias = "BEARISH";
+    setup = "SELL RETRACEMENT";
+    confidence = bearish;
+
+  }
 
 
-  // ==========================
-  // Entry / SL / Target
-  // ==========================
+  if(confidence > 95)
+    confidence = 95;
+
+
+
+  // Entry
 
   let entry = null;
   let stopLoss = null;
   let target = null;
+  let rr = null;
 
 
 
-  if (orderBlock) {
-
+  if(orderBlock){
 
     entry = {
-
-      high: orderBlock.high,
-
-      low: orderBlock.low
-
+      high: Number(orderBlock.high),
+      low : Number(orderBlock.low)
     };
 
-
   }
 
 
 
-
-  if (
-    entry &&
-    atr
-  ) {
+  if(entry && atr){
 
 
-    if (bias === "BEARISH") {
-
+    if(bias === "BEARISH"){
 
       stopLoss =
-        Number(entry.high) +
-        Number(atr * 1.5);
-
+        entry.high + (atr * 1.5);
 
 
       target =
-        Number(entry.low) -
-        Number(atr * 3);
-
+        entry.low - (atr * 3);
 
     }
 
 
 
-    if (bias === "BULLISH") {
+    if(bias === "BULLISH"){
 
 
       stopLoss =
-        Number(entry.low) -
-        Number(atr * 1.5);
-
+        entry.low - (atr * 1.5);
 
 
       target =
-        Number(entry.high) +
-        Number(atr * 3);
+        entry.high + (atr * 3);
 
+    }
+
+
+
+    let entryPrice =
+      (entry.high + entry.low) / 2;
+
+
+    let risk =
+      Math.abs(stopLoss - entryPrice);
+
+
+    let reward =
+      Math.abs(target - entryPrice);
+
+
+    if(risk > 0){
+
+      rr =
+        Number((reward / risk).toFixed(2));
 
     }
 
   }
-
-
 
 
 
   return {
 
+    bullishScore: bullish,
+
+    bearishScore: bearish,
+
     bias,
 
     setup,
 
-    confidence: score,
+    confidence,
 
     entry,
 
     stopLoss,
 
-    target
+    target,
+
+    rr
 
   };
-
 
 }
 
