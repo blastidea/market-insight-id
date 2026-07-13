@@ -396,11 +396,15 @@ console.log("Strength    :", liquidity.strength);
 // Order Block
 // ==========================
 
+console.log("DEBUG: START ORDER BLOCK");
+
 const orderBlock = analyzeOrderBlock(
   data.history,
   bos,
   atr14
 );
+
+console.log("DEBUG: ORDER BLOCK DONE");
 
 
 console.log("");
