@@ -42,6 +42,9 @@ const {
   analyzeRisk
 } = require("./risk");
 
+const {
+  analyzeExecution
+} = require("./execution");
 
 async function main() {
 
@@ -602,6 +605,54 @@ console.log("Target TP3    :", risk.target.tp3);
 console.log("");
 
 console.log("Risk Reward   :", risk.riskReward);
+
+
+    // ==========================
+// Execution Engine
+// ==========================
+
+const execution = analyzeExecution(
+  decision,
+  orderBlock,
+  liquidity,
+  bos,
+  choch,
+  confluence,
+  data.history,
+  Number(last.close),
+  atr14
+);
+
+
+console.log("");
+
+console.log("EXECUTION ENGINE");
+console.log("----------------------------");
+
+console.log(
+  "Status      :",
+  execution.status
+);
+
+console.log(
+  "Reason      :",
+  execution.reason
+);
+
+console.log(
+  "Entry       :",
+  execution.entry ?? "-"
+);
+
+console.log(
+  "Distance    :",
+  execution.distance ?? "-"
+);
+
+console.log(
+  "Version     :",
+  execution.version
+);
     
     
   } catch (err) {
