@@ -608,7 +608,7 @@ console.log("Risk Reward   :", risk.riskReward);
 
 
     // ==========================
-// Execution Engine
+// Execution Engine v1.2
 // ==========================
 
 const execution = analyzeExecution(
@@ -617,7 +617,7 @@ const execution = analyzeExecution(
   liquidity,
   bos,
   choch,
-  confluence,
+  decision,
   data.history,
   Number(last.close),
   atr14
