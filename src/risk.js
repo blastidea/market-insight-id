@@ -9,52 +9,38 @@ function analyzeRisk(
   atr
 ) {
 
-
   let action = "WAIT CONFIRMATION";
   let reason = "No valid setup";
-
   let riskLevel = "LOW";
-
 
   let entry = null;
   let stopLoss = null;
-
 
   let tp1 = null;
   let tp2 = null;
   let tp3 = null;
 
-
   let riskReward = 0;
-
 
 
   // ==========================
   // ATR CHECK
   // ==========================
 
-  if(!atr){
+  if (!atr) {
 
     return {
-
       action:"WAIT CONFIRMATION",
-
       reason:"ATR unavailable",
-
       riskLevel:"LOW",
-
       entry:null,
-
       stopLoss:null,
-
       target:{
         tp1:null,
         tp2:null,
         tp3:null
       },
-
       riskReward:0
-
     };
 
   }
@@ -62,7 +48,7 @@ function analyzeRisk(
 
 
   // ==========================
-  // CHECK SETUP
+  // BASIC CHECK
   // ==========================
 
   if (
@@ -72,22 +58,17 @@ function analyzeRisk(
   ) {
 
     return {
-
       action,
       reason,
       riskLevel,
-
-      entry,
-      stopLoss,
-
+      entry:null,
+      stopLoss:null,
       target:{
-        tp1,
-        tp2,
-        tp3
+        tp1:null,
+        tp2:null,
+        tp3:null
       },
-
-      riskReward
-
+      riskReward:0
     };
 
   }
@@ -101,69 +82,64 @@ function analyzeRisk(
   if(decision.confidence < 65){
 
     return {
-
       action:"WAIT CONFIRMATION",
-
       reason:"Confidence below threshold",
-
       riskLevel:"LOW",
-
       entry:null,
-
       stopLoss:null,
-
       target:{
         tp1:null,
         tp2:null,
         tp3:null
       },
-
       riskReward:0
-
     };
 
   }
 
 
 
-
-
   // ==========================
-  // BEARISH SELL PLAN
+  // SELL PLAN
   // ==========================
 
-  if(decision.bias === "BEARISH") {
+  if(decision.bias === "BEARISH"){
 
 
-    action = "EXECUTE SELL PLAN";
-
+    action="EXECUTE SELL PLAN";
 
     reason =
-    "Strong bearish confluence + valid order block";
+    "Bearish confluence + valid order block";
+
+    riskLevel="MEDIUM";
 
 
-    riskLevel = "MEDIUM";
+
+    // Entry mitigation OB
+
+    const entryPrice =
+      (orderBlock.high + orderBlock.low) / 2;
 
 
 
     entry = {
-
-      high: orderBlock.high,
-
-      low: orderBlock.low
-
+      high:orderBlock.high,
+      low:orderBlock.low,
+      price:Number(entryPrice.toFixed(2))
     };
 
 
 
-    const entryPrice =
-      orderBlock.low;
-
-
+    // SL
 
     stopLoss =
-      orderBlock.high +
-      (atr * 1.5);
+      Number(
+        (
+          orderBlock.high +
+          (atr * 0.8)
+        )
+        .toFixed(2)
+      );
 
 
 
@@ -178,13 +154,11 @@ function analyzeRisk(
 
 
 
-    // Swing Low Target
+    // Swing low
 
     if(market.swingLows){
 
-
       market.swingLows.forEach(x=>{
-
 
         if(x.price < entryPrice){
 
@@ -192,29 +166,21 @@ function analyzeRisk(
 
         }
 
-
       });
-
 
     }
 
 
 
-    // Bearish FVG Target
+    // FVG
 
     if(
       fvg &&
-      fvg.type==="Bearish"
+      fvg.type==="Bearish" &&
+      fvg.low < entryPrice
     ){
 
-
-      if(fvg.low < entryPrice){
-
-        targets.push(
-          fvg.low
-        );
-
-      }
+      targets.push(fvg.low);
 
     }
 
@@ -234,56 +200,43 @@ function analyzeRisk(
     let valid=[];
 
 
-
     targets.forEach(t=>{
 
-
       const reward =
-      Math.abs(
-        entryPrice - t
-      );
-
+      Math.abs(entryPrice-t);
 
 
       const rr =
-      reward / risk;
+      reward/risk;
 
 
-
-      if(rr >= 1.5){
+      if(rr>=1.5){
 
         valid.push(t);
 
       }
 
-
     });
 
 
 
-    // ==========================
-    // FALLBACK ATR TARGET
-    // ==========================
+    if(valid.length){
 
-    if(valid.length > 0){
-
-      tp1 = valid[0];
-      tp2 = valid[1] || null;
-      tp3 = valid[2] || null;
+      tp1=valid[0] || null;
+      tp2=valid[1] || null;
+      tp3=valid[2] || null;
 
     }
     else {
-
 
       tp1 =
       Number(
         (
           entryPrice -
-          (atr * 3)
+          (atr*3)
         )
         .toFixed(2)
       );
-
 
     }
 
@@ -294,7 +247,7 @@ function analyzeRisk(
       riskReward =
       Number(
         (
-          Math.abs(entryPrice - tp1)
+          Math.abs(entryPrice-tp1)
           /
           risk
         )
@@ -309,45 +262,43 @@ function analyzeRisk(
 
 
 
-
-
-
   // ==========================
-  // BULLISH BUY PLAN
+  // BUY PLAN
   // ==========================
 
-  if(decision.bias === "BULLISH") {
+  if(decision.bias==="BULLISH"){
 
 
     action="EXECUTE BUY PLAN";
 
-
     reason =
-    "Strong bullish confluence + valid demand zone";
-
+    "Bullish confluence + valid order block";
 
     riskLevel="MEDIUM";
 
 
 
+    const entryPrice =
+    (orderBlock.high + orderBlock.low) / 2;
+
+
+
     entry={
-
       high:orderBlock.high,
-
-      low:orderBlock.low
-
+      low:orderBlock.low,
+      price:Number(entryPrice.toFixed(2))
     };
 
 
 
-    const entryPrice =
-      orderBlock.high;
-
-
-
     stopLoss =
-      orderBlock.low -
-      (atr * 1.5);
+    Number(
+      (
+        orderBlock.low -
+        (atr*0.8)
+      )
+      .toFixed(2)
+    );
 
 
 
@@ -362,51 +313,31 @@ function analyzeRisk(
 
 
 
-    // Swing High Target
-
     if(market.swingHighs){
-
 
       market.swingHighs.forEach(x=>{
 
-
         if(x.price > entryPrice){
 
-          targets.push(
-            x.price
-          );
+          targets.push(x.price);
 
         }
 
-
       });
-
 
     }
 
 
-
-
-
-    // Bullish FVG Target
 
     if(
       fvg &&
-      fvg.type==="Bullish"
+      fvg.type==="Bullish" &&
+      fvg.high > entryPrice
     ){
 
-
-      if(fvg.high > entryPrice){
-
-        targets.push(
-          fvg.high
-        );
-
-      }
+      targets.push(fvg.high);
 
     }
-
-
 
 
 
@@ -424,20 +355,14 @@ function analyzeRisk(
     let valid=[];
 
 
-
     targets.forEach(t=>{
 
-
       const reward =
-      Math.abs(
-        t-entryPrice
-      );
-
+      Math.abs(t-entryPrice);
 
 
       const rr =
       reward/risk;
-
 
 
       if(rr>=1.5){
@@ -446,40 +371,29 @@ function analyzeRisk(
 
       }
 
-
     });
 
 
 
+    if(valid.length){
 
-
-    // ==========================
-    // FALLBACK ATR TARGET
-    // ==========================
-
-    if(valid.length > 0){
-
-      tp1 = valid[0];
-      tp2 = valid[1] || null;
-      tp3 = valid[2] || null;
+      tp1=valid[0] || null;
+      tp2=valid[1] || null;
+      tp3=valid[2] || null;
 
     }
     else {
 
-
       tp1 =
       Number(
         (
-          entryPrice +
-          (atr * 3)
+          entryPrice+
+          (atr*3)
         )
         .toFixed(2)
       );
 
-
     }
-
-
 
 
 
@@ -495,25 +409,13 @@ function analyzeRisk(
         .toFixed(2)
       );
 
-
     }
-
 
   }
 
 
 
-
-
-
-
-  // ==========================
-  // RESULT
-  // ==========================
-
-
   return {
-
 
     action,
 
@@ -521,26 +423,17 @@ function analyzeRisk(
 
     riskLevel,
 
-
     entry,
-
 
     stopLoss,
 
-
     target:{
-
       tp1,
-
       tp2,
-
       tp3
-
     },
 
-
     riskReward
-
 
   };
 
@@ -548,9 +441,6 @@ function analyzeRisk(
 }
 
 
-
 module.exports = {
-
   analyzeRisk
-
 };
