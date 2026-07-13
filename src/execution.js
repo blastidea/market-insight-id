@@ -17,6 +17,7 @@ function analyzeExecution(
 
 
   let reason = [];
+  let status = "WAIT";
 
 
 
@@ -82,7 +83,39 @@ timestamp:new Date().toISOString()
     "Risk plan valid"
   );
 
+// ==========================
+// STATE VALIDATION
+// ==========================
 
+if(state){
+
+  if(state.state === "MISSED"){
+
+    status = "CANCEL";
+
+    reason.push(
+      "Price already left setup area"
+    );
+
+  }
+
+  else if(state.state === "WAIT_RETRACE"){
+
+    reason.push(
+      "Waiting retrace into Order Block"
+    );
+
+  }
+
+  else if(state.state === "READY"){
+
+    reason.push(
+      "Price inside entry zone"
+    );
+
+  }
+
+}
 
 
 
@@ -261,22 +294,13 @@ timestamp:new Date().toISOString()
   // FINAL STATUS
   // ==========================
 
-
-  let status =
-  "WAIT";
-
-
-
   if(
-    candleConfirm
-  ){
-
-    status="READY";
-
+  status !== "CANCEL"
+){
+  if(candleConfirm){
+    status = "READY";
   }
-
-
-
+}
 
 
   return {
