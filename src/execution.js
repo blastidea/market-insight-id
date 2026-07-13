@@ -54,25 +54,28 @@ function analyzeExecution(
 
 
   if(
-    !risk.entry ||
-    !risk.stopLoss ||
-    !risk.target
-  ){
+ !risk.entry ||
+ !risk.stopLoss ||
+ !risk.target
+){
 
-    return {
+return {
 
-      status:"WAIT",
+status:"WAIT",
 
-      reason:"Risk plan incomplete",
+direction:
+decision ? decision.bias : null,
 
-      version:"1.3+",
+reason:
+risk.reason || "Risk plan incomplete",
 
-      timestamp:new Date().toISOString()
+version:"1.3+",
 
-    };
+timestamp:new Date().toISOString()
 
-  }
+};
 
+}
 
 
   reason.push(
