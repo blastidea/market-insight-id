@@ -34,6 +34,9 @@ const {
   analyzeZone
 } = require("./zone");
 
+const {
+  analyzeConfluence
+} = require("./confluence");
 
 async function main() {
 
@@ -472,6 +475,35 @@ console.log("");
 
 console.log("Distance    :", zone.distance);
 console.log("Score       :", zone.score + "%");
+
+
+    const decision = analyzeConfluence(
+  trend,
+  rsi14,
+  bos,
+  choch,
+  liquidity,
+  orderBlock,
+  fvg,
+  zone,
+  atr14
+);
+
+
+console.log("");
+
+console.log("AI MARKET DECISION");
+console.log("----------------------------");
+
+console.log("Bias        :", decision.bias);
+console.log("Setup       :", decision.setup);
+console.log("Confidence  :", decision.confidence + "%");
+
+console.log("Entry       :", decision.entry);
+
+console.log("Stop Loss   :", decision.stopLoss);
+
+console.log("Target      :", decision.target);
     
     
   } catch (err) {
