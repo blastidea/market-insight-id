@@ -432,6 +432,7 @@ console.log("Datetime    :", fvg.datetime);
 
 
 // ==========================
+// ==========================
 // Market Zone
 // ==========================
 
@@ -455,16 +456,21 @@ console.log("Zone        :", zone.zone);
 console.log("Location    :", zone.location);
 console.log("Bias        :", zone.bias);
 
+console.log("");
+
 console.log("High        :", zone.high);
 console.log("Low         :", zone.low);
 
 console.log("Equilibrium :", zone.equilibrium);
 
+console.log("");
+
 console.log("Fib 0.618   :", zone.fib618);
 console.log("Fib 0.382   :", zone.fib382);
 
-console.log("Distance    :", zone.distance);
+console.log("");
 
+console.log("Distance    :", zone.distance);
 console.log("Score       :", zone.score + "%");
     
     
