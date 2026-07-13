@@ -301,9 +301,10 @@ async function main() {
     // ==========================
 
     const bos = analyzeBOS(
-      Number(last.close),
-      market
-    );
+  Number(last.close),
+  market,
+  atr14
+);
 
 
     console.log("");
@@ -312,8 +313,9 @@ async function main() {
     console.log("----------------------------");
 
     console.log("Direction   :", bos.direction);
-    console.log("Level       :", bos.level ?? "-");
-    console.log("Status      :", bos.status);
+console.log("Level       :", bos.level ?? "-");
+console.log("Status      :", bos.status);
+console.log("Strength    :", bos.strength);
 
 
 
