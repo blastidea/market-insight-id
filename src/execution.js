@@ -14,7 +14,6 @@ function analyzeExecution(
   atr
 ){
 
-
   let status = "WAIT";
 
   let reason = [];
@@ -38,9 +37,11 @@ function analyzeExecution(
 
       status:"CANCEL",
 
-      reason:[
-        "Missing setup"
-      ]
+      reason:"Missing setup",
+
+      version:"1.2",
+
+      timestamp:new Date().toISOString()
 
     };
 
@@ -56,9 +57,11 @@ function analyzeExecution(
 
       status:"CANCEL",
 
-      reason:[
-        "No valid order block"
-      ]
+      reason:"No valid order block",
+
+      version:"1.2",
+
+      timestamp:new Date().toISOString()
 
     };
 
@@ -75,13 +78,12 @@ function analyzeExecution(
     decision.bias === "BEARISH"
   ){
 
-    entry =
-    orderBlock.low;
+    entry = orderBlock.low;
 
 
     distance =
     Math.abs(
-      price-entry
+      price - entry
     );
 
 
@@ -113,13 +115,15 @@ function analyzeExecution(
 
         status:"WAIT",
 
-        reason:[
-          "Waiting retracement to bearish OB"
-        ],
+        reason:"Waiting retracement to bearish OB",
 
         entry,
 
-        distance
+        distance,
+
+        version:"1.2",
+
+        timestamp:new Date().toISOString()
 
       };
 
@@ -136,14 +140,13 @@ function analyzeExecution(
   ){
 
 
-    entry =
-    orderBlock.high;
+    entry = orderBlock.high;
 
 
 
     distance =
     Math.abs(
-      price-entry
+      price - entry
     );
 
 
@@ -171,21 +174,21 @@ function analyzeExecution(
     }
     else{
 
-
       return {
 
         status:"WAIT",
 
-        reason:[
-          "Waiting retracement to bullish OB"
-        ],
+        reason:"Waiting retracement to bullish OB",
 
         entry,
 
-        distance
+        distance,
+
+        version:"1.2",
+
+        timestamp:new Date().toISOString()
 
       };
-
 
     }
 
@@ -210,9 +213,11 @@ function analyzeExecution(
 
       status:"WAIT",
 
-      reason:[
-        "Waiting BOS confirmation"
-      ]
+      reason:"Waiting BOS confirmation",
+
+      version:"1.2",
+
+      timestamp:new Date().toISOString()
 
     };
 
@@ -276,7 +281,7 @@ function analyzeExecution(
 
 
   // ==========================
-  // CONFLUENCE
+  // CONFLUENCE FILTER
   // ==========================
 
 
@@ -289,9 +294,11 @@ function analyzeExecution(
 
       status:"WAIT",
 
-      reason:[
-        "Low confluence"
-      ]
+      reason:"Low confluence",
+
+      version:"1.2",
+
+      timestamp:new Date().toISOString()
 
     };
 
@@ -307,14 +314,18 @@ function analyzeExecution(
 
 
   // ==========================
-  // CANDLE REJECTION
+  // CANDLE CONFIRMATION
   // ==========================
 
 
   let candleConfirm = false;
 
 
-  if(history && history.length >= 2){
+
+  if(
+    history &&
+    history.length >= 2
+  ){
 
 
     let last =
@@ -329,12 +340,12 @@ function analyzeExecution(
     // bearish rejection
 
     if(
-      decision.bias==="BEARISH" &&
+      decision.bias === "BEARISH" &&
       last.close < last.open &&
       last.high > prev.high
     ){
 
-      candleConfirm=true;
+      candleConfirm = true;
 
     }
 
@@ -343,17 +354,18 @@ function analyzeExecution(
     // bullish rejection
 
     if(
-      decision.bias==="BULLISH" &&
+      decision.bias === "BULLISH" &&
       last.close > last.open &&
       last.low < prev.low
     ){
 
-      candleConfirm=true;
+      candleConfirm = true;
 
     }
 
 
   }
+
 
 
 
@@ -379,24 +391,21 @@ function analyzeExecution(
 
 
   // ==========================
-  // FINAL DECISION
+  // FINAL STATUS
   // ==========================
 
 
   if(
     candleConfirm &&
-    bos.status==="Confirmed"
+    bos.status === "Confirmed"
   ){
 
     status="READY";
 
-
   }
   else{
 
-
     status="WAIT";
-
 
   }
 
@@ -406,25 +415,19 @@ function analyzeExecution(
 
   return {
 
-
     status,
 
-
-    reason:reason.join(" | "),
-
+    reason:
+    reason.join(" | "),
 
     entry,
 
-
     distance,
-
 
     version:"1.2",
 
-
     timestamp:
     new Date().toISOString()
-
 
   };
 
@@ -433,8 +436,8 @@ function analyzeExecution(
 
 
 
-module.exports={
+module.exports = {
 
- analyzeExecution
+  analyzeExecution
 
 };
