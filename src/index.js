@@ -432,12 +432,12 @@ console.log("Datetime    :", fvg.datetime);
 
 
 // ==========================
-// Premium Discount Zone
+// Market Zone
 // ==========================
 
 const zone = analyzeZone(
-  market,
-  Number(last.close)
+  Number(last.close),
+  market
 );
 
 
@@ -447,11 +447,17 @@ console.log("Market Zone");
 console.log("----------------------------");
 
 console.log("Zone        :", zone.zone);
+console.log("Bias        :", zone.bias);
+
 console.log("High        :", zone.high);
 console.log("Low         :", zone.low);
+
 console.log("Equilibrium :", zone.equilibrium);
+
 console.log("Fib 0.618   :", zone.fib618);
+
 console.log("Fib 0.382   :", zone.fib382);
+
 console.log("Score       :", zone.score + "%");
     
     
