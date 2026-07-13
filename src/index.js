@@ -46,6 +46,10 @@ const {
   analyzeExecution
 } = require("./execution");
 
+const {
+  analyzeState
+} = require("./state");
+
 async function main() {
 
   try {
@@ -608,7 +612,44 @@ console.log(
     : "-"
 );
 
+    // ==========================
+// STATE ENGINE
+// ==========================
+const state = analyzeState(
+  currentPrice,
+  risk.entry,
+  atr
+);
 
+   
+    console.log("");
+console.log("STATE ENGINE");
+console.log("----------------------------");
+
+console.log(
+  "State         :",
+  state.state
+);
+
+console.log(
+  "Reason        :",
+  state.reason
+);
+
+console.log(
+  "Distance      :",
+  state.distance
+);
+
+console.log(
+  "ATR           :",
+  state.atr
+);
+
+console.log(
+  "Entry         :",
+  state.entry
+);
     // ==========================
 // Execution Engine
 // ==========================
