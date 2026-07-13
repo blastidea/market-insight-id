@@ -120,22 +120,31 @@ async function main() {
     console.log("Action      :", action);
 
     // ==========================
-    // Market Structure
-    // ==========================
-    const market = analyzeStructure(data.history);
+// Market Structure
+// ==========================
+const market = analyzeStructure(data.history);
 
-    console.log("");
-    console.log("Market Structure");
-    console.log("----------------------------");
+console.log("");
+console.log("Market Structure");
+console.log("----------------------------");
 
-    console.log("Swing High  :", market.swingHigh ? market.swingHigh.price : "-");
-    console.log("Swing Low   :", market.swingLow ? market.swingLow.price : "-");
+console.log("Last High   :", market.swingHigh ? market.swingHigh.price : "-");
+console.log("Prev High   :", market.prevHigh ? market.prevHigh.price : "-");
 
-    console.log("High Count  :", market.totalSwingHigh);
-    console.log("Low Count   :", market.totalSwingLow);
+console.log("");
 
-    console.log("Structure   :", market.structure);
-    console.log("Bias        :", market.bias);
+console.log("Last Low    :", market.swingLow ? market.swingLow.price : "-");
+console.log("Prev Low    :", market.prevLow ? market.prevLow.price : "-");
+
+console.log("");
+
+console.log("High Count  :", market.totalSwingHigh);
+console.log("Low Count   :", market.totalSwingLow);
+
+console.log("");
+
+console.log("Structure   :", market.structure);
+console.log("Bias        :", market.bias);
 
   } catch (err) {
 
