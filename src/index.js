@@ -22,6 +22,9 @@ const {
   analyzeLiquidity
 } = require("./liquidity");
 
+const {
+  analyzeOrderBlock
+} = require("./orderBlock");
 
 async function main() {
 
@@ -369,7 +372,30 @@ console.log("Status      :", liquidity.status);
 console.log("Strength    :", liquidity.strength);
     console.log("Candle      :", liquidity.candle ?? "-");
 
+// ==========================
+// Order Block
+// ==========================
 
+const orderBlock = analyzeOrderBlock(
+  data.history,
+  bos,
+  atr14
+);
+
+
+console.log("");
+
+console.log("Order Block");
+console.log("----------------------------");
+
+console.log("Type        :", orderBlock.type);
+console.log("High        :", orderBlock.high ?? "-");
+console.log("Low         :", orderBlock.low ?? "-");
+console.log("Status      :", orderBlock.status);
+console.log("Strength    :", orderBlock.strength);
+console.log("Datetime    :", orderBlock.datetime ?? "-");
+
+    
   } catch (err) {
 
 
