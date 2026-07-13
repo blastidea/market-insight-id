@@ -22,12 +22,9 @@ const {
   analyzeLiquidity
 } = require("./liquidity");
 
-const ob = analyzeOrderBlock(
-  data.history,
-  market,
-  last.close,
-  atr14
-);
+const {
+  analyzeOrderBlock
+} = require("./orderBlock");
 
 async function main() {
 
@@ -390,15 +387,15 @@ console.log("");
 console.log("Order Block");
 console.log("----------------------------");
 
-console.log("Type        :", ob.type);
-console.log("Zone High   :", ob.high);
-console.log("Zone Low    :", ob.low);
-console.log("Status      :", ob.status);
-console.log("Mitigation  :", ob.mitigation);
-console.log("Strength    :", ob.strength);
-console.log("Score       :", ob.score + "%");
-console.log("Distance    :", ob.distance);
-console.log("Datetime    :", ob.datetime);
+console.log("Type        :", orderBlock.type);
+console.log("Zone High   :", orderBlock.high);
+console.log("Zone Low    :", orderBlock.low);
+console.log("Status      :", orderBlock.status);
+console.log("Mitigation  :", orderBlock.mitigation);
+console.log("Strength    :", orderBlock.strength);
+console.log("Score       :", orderBlock.score + "%");
+console.log("Distance    :", orderBlock.distance);
+console.log("Datetime    :", orderBlock.datetime);
     
   } catch (err) {
 
