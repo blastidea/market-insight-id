@@ -1,5 +1,9 @@
 const { getCandles } = require("./market");
-const { calculateEMA } = require("./indicators");
+const {
+  calculateEMA,
+  calculateRSI,
+  calculateATR
+} = require("./indicators");
 
 async function main() {
   try {
@@ -51,12 +55,16 @@ async function main() {
     // ==========================
     const ema20 = calculateEMA(data.history, 20);
     const ema50 = calculateEMA(data.history, 50);
+    const rsi14 = calculateRSI(data.history, 14);
+    const atr14 = calculateATR(data.history, 14);
 
     console.log("");
     console.log("Indicators");
     console.log("----------------------------");
     console.log("EMA20       :", ema20);
     console.log("EMA50       :", ema50);
+    console.log("RSI14       :", rsi14);
+    console.log("ATR14       :", atr14);
 
     let trend = "Sideways";
 
@@ -67,6 +75,21 @@ async function main() {
     }
 
     console.log("Trend       :", trend);
+
+    // ==========================
+    // Market Status
+    // ==========================
+    console.log("");
+    console.log("Market Status");
+    console.log("----------------------------");
+
+    if (trend === "Bullish 📈" && rsi14 < 70) {
+      console.log("Bias        : BUY");
+    } else if (trend === "Bearish 📉" && rsi14 > 30) {
+      console.log("Bias        : SELL");
+    } else {
+      console.log("Bias        : WAIT");
+    }
 
   } catch (err) {
 
