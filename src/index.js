@@ -1,11 +1,17 @@
 const { getCandles } = require("./market");
+
 const {
   calculateEMA,
   calculateRSI,
   calculateATR
 } = require("./indicators");
 
+const {
+  analyzeStructure
+} = require("./marketStructure");
+
 async function main() {
+
   try {
 
     console.log("====================================");
@@ -113,6 +119,24 @@ async function main() {
     console.log("Bias        :", bias);
     console.log("Action      :", action);
 
+    // ==========================
+    // Market Structure
+    // ==========================
+    const market = analyzeStructure(data.history);
+
+    console.log("");
+    console.log("Market Structure");
+    console.log("----------------------------");
+
+    console.log("Swing High  :", market.swingHigh ? market.swingHigh.price : "-");
+    console.log("Swing Low   :", market.swingLow ? market.swingLow.price : "-");
+
+    console.log("High Count  :", market.totalSwingHigh);
+    console.log("Low Count   :", market.totalSwingLow);
+
+    console.log("Structure   :", market.structure);
+    console.log("Bias        :", market.bias);
+
   } catch (err) {
 
     console.log("");
@@ -125,6 +149,7 @@ async function main() {
     }
 
   }
+
 }
 
 main();
