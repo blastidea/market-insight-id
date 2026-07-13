@@ -146,6 +146,36 @@ console.log("");
 console.log("Structure   :", market.structure);
 console.log("Bias        :", market.bias);
 
+// ==========================
+// Recent Swing Highs
+// ==========================
+console.log("");
+console.log("Recent Swing Highs");
+console.log("----------------------------");
+
+const recentHighs = market.swingHighs.slice(-5).reverse();
+
+recentHighs.forEach((item, index) => {
+  console.log(
+    `${index + 1}. ${item.price} | ${item.datetime}`
+  );
+});
+
+// ==========================
+// Recent Swing Lows
+// ==========================
+console.log("");
+console.log("Recent Swing Lows");
+console.log("----------------------------");
+
+const recentLows = market.swingLows.slice(-5).reverse();
+
+recentLows.forEach((item, index) => {
+  console.log(
+    `${index + 1}. ${item.price} | ${item.datetime}`
+  );
+});
+
   } catch (err) {
 
     console.log("");
