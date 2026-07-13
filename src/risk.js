@@ -1,106 +1,89 @@
 function analyzeRisk(
-  confidence,
-  rr,
-  bias,
-  setup
-) {
+  decision,
+  orderBlock,
+  liquidity,
+  atr,
+  price
+){
+
+  let action = "WAIT CONFIRMATION";
+  let reason = "";
+  let riskLevel = "LOW";
 
 
-  let action = "WAIT";
-
-  let reason = "Insufficient confirmation";
-
-  let riskLevel = "NORMAL";
+  let entry = null;
+  let stopLoss = null;
+  let target = null;
 
 
+  // =========================
+  // VALIDASI SETUP
+  // =========================
 
-  // ==========================
-  // Basic Filter
-  // ==========================
-
-  if (
-    confidence < 50
-  ) {
-
-    action = "NO TRADE";
-
-    reason = "Confidence below minimum";
-
+  if(!decision){
 
     return {
-
       action,
-      reason,
-      riskLevel
-
+      reason:"No setup detected",
+      riskLevel:"HIGH"
     };
 
   }
 
 
-
-
-  if (
-    rr < 1.5
-  ) {
-
-    action = "NO TRADE";
-
-    reason = "Risk Reward below 1:1.5";
-
-
-    return {
-
-      action,
-      reason,
-      riskLevel
-
-    };
-
-  }
+  const confidence = decision.confidence || 0;
 
 
 
+  // =========================
+  // SELL SETUP
+  // =========================
+
+  if(decision.bias === "BEARISH"){
 
 
-  // ==========================
-  // Execution Filter
-  // ==========================
+    if(orderBlock && orderBlock.type === "Bearish"){
 
 
-  if (
-    confidence >= 70 &&
-    rr >= 2
-  ) {
+      entry = {
+        high:orderBlock.high,
+        low:orderBlock.low
+      };
 
 
-    action = "EXECUTE";
+      stopLoss =
+        orderBlock.high + (atr * 1.5);
 
 
-    reason =
-      "High confidence and acceptable RR";
-
-
-    riskLevel = "LOW";
-
-  }
+      target =
+        price - ((stopLoss-price)*2);
 
 
 
-  else if(
-    confidence >= 60 &&
-    rr >= 1.5
-  ){
+      if(confidence >= 70){
+
+        action = "EXECUTE SELL PLAN";
+
+        reason =
+        "Strong bearish confluence + valid order block";
 
 
-    action = "WAIT CONFIRMATION";
+        riskLevel="MEDIUM";
 
 
-    reason =
-      "Setup valid but needs confirmation";
+      }else{
+
+        action="WAIT CONFIRMATION";
+
+        reason=
+        "Bearish setup detected but confidence weak";
+
+        riskLevel="MEDIUM";
+
+      }
 
 
-    riskLevel = "MEDIUM";
+    }
 
 
   }
@@ -108,48 +91,95 @@ function analyzeRisk(
 
 
 
-  // ==========================
-  // Bias Check
-  // ==========================
+  // =========================
+  // BUY SETUP
+  // =========================
+
+  if(decision.bias==="BULLISH"){
 
 
-  if(
-    bias === "NEUTRAL"
-  ){
+    if(orderBlock && orderBlock.type==="Bullish"){
 
-    action = "NO TRADE";
 
-    reason =
-      "Market bias unclear";
+      entry={
+        high:orderBlock.high,
+        low:orderBlock.low
+      };
+
+
+      stopLoss =
+      orderBlock.low - (atr*1.5);
+
+
+      target =
+      price + ((price-stopLoss)*2);
+
+
+
+      if(confidence>=70){
+
+        action="EXECUTE BUY PLAN";
+
+        reason=
+        "Strong bullish confluence + valid order block";
+
+        riskLevel="MEDIUM";
+
+
+      }else{
+
+        action="WAIT CONFIRMATION";
+
+        reason=
+        "Need stronger confirmation";
+
+      }
+
+
+    }
 
   }
 
 
 
 
-  return {
+  let rr=null;
 
-    action,
 
-    reason,
+  if(stopLoss && target){
 
-    riskLevel,
+    let risk=Math.abs(price-stopLoss);
 
-    confidence,
+    let reward=Math.abs(target-price);
 
-    rr,
+    rr=(reward/risk).toFixed(2);
 
-    bias,
+  }
 
-    setup
 
-  };
+
+return {
+
+ action,
+
+ reason,
+
+ riskLevel,
+
+ entry,
+
+ stopLoss,
+
+ target,
+
+ riskReward:rr
+
+};
 
 
 }
 
 
-
-module.exports = {
-  analyzeRisk
+module.exports={
+ analyzeRisk
 };
