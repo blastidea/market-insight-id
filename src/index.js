@@ -89,17 +89,13 @@ async function main() {
     console.log("Low         :", last.low);
     console.log("Close       :", last.close);
 
-
-
     // ==========================
     // History Check
     // ==========================
 
     console.log("");
-
     console.log("History Check");
     console.log("----------------------------");
-
     console.log(
       "Oldest Close :",
       data.history[data.history.length - 1].close
@@ -123,31 +119,20 @@ async function main() {
 
 
     console.log("");
-
     console.log("Indicators");
     console.log("----------------------------");
-
     console.log("EMA20       :", ema20);
     console.log("EMA50       :", ema50);
     console.log("RSI14       :", rsi14);
     console.log("ATR14       :", atr14);
 
-
     let trend = "Sideways";
-
     if (ema20 > ema50) {
-
       trend = "Bullish 📈";
-
     } else if (ema20 < ema50) {
-
       trend = "Bearish 📉";
-
     }
-
-
     console.log("Trend       :", trend);
-
 
 
     // ==========================
@@ -159,20 +144,13 @@ async function main() {
     console.log("Market Status");
     console.log("----------------------------");
 
-
     let momentum = "Neutral";
-
-
     if (rsi14 >= 70) {
-
       momentum = "Overbought";
 
     } else if (rsi14 <= 30) {
-
       momentum = "Oversold";
-
     }
-
 
     let bias = "Neutral";
 
@@ -187,9 +165,7 @@ async function main() {
 
     }
 
-
     let action = "Wait Confirmation";
-
 
     if (
       trend.includes("Bullish") &&
@@ -375,7 +351,6 @@ console.log("Status      :", choch.status);
 // ==========================
 // Liquidity
 // ==========================
-
     
   const liquidity = analyzeLiquidity(
   data.history,
@@ -384,12 +359,9 @@ console.log("Status      :", choch.status);
   atr14
 );
 
-
 console.log("");
-
 console.log("Liquidity Sweep");
 console.log("----------------------------");
-
 console.log("Type        :", liquidity.type);
 console.log("Level       :", liquidity.level ?? "-");
 console.log("Status      :", liquidity.status);
@@ -400,16 +372,11 @@ console.log("Strength    :", liquidity.strength);
 // Order Block
 // ==========================
 
-console.log("DEBUG: START ORDER BLOCK");
-
 const orderBlock = analyzeOrderBlock(
   data.history,
   bos,
   atr14
 );
-
-console.log("DEBUG: ORDER BLOCK DONE");
-
 
 console.log("");
 console.log("Order Block");
