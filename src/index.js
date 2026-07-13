@@ -627,15 +627,20 @@ console.log("");
 console.log("EXECUTION ENGINE");
 console.log("----------------------------");
 
-console.log("Status      :", execution.status);
-console.log("Direction   :", execution.direction);
-console.log("Entry       :", execution.entry);
-console.log("Stop Loss   :", execution.stopLoss);
-console.log("Target      :", execution.target);
-console.log("Risk Reward :", execution.riskReward);
-console.log("Confidence  :", execution.confidence + "%");
-console.log("Reason      :", execution.reason);
-console.log("Version     :", execution.version);
+console.log("Status      :", execution.status ?? "-");
+console.log("Direction   :", execution.direction ?? "-");
+console.log("Entry       :", execution.entry ?? "-");
+console.log("Stop Loss   :", execution.stopLoss ?? "-");
+console.log("Target      :", execution.target ?? "-");
+console.log("Risk Reward :", execution.riskReward ?? "-");
+console.log(
+  "Confidence  :",
+  execution.confidence != null
+    ? execution.confidence + "%"
+    : "-"
+);
+console.log("Reason      :", execution.reason ?? "-");
+console.log("Version     :", execution.version ?? "-");
 
 }
     
