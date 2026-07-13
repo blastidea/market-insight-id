@@ -118,7 +118,38 @@ function analyzeRisk(
     // Entry mitigation OB
 
     const entryPrice =
-      (orderBlock.high + orderBlock.low) / 2;
+(orderBlock.high + orderBlock.low) / 2;
+
+
+const distance =
+Math.abs(price - entryPrice);
+
+
+if(distance > atr * 2){
+
+return {
+
+action:"WAIT CONFIRMATION",
+
+reason:"Price already left order block",
+
+riskLevel:"LOW",
+
+entry:null,
+
+stopLoss:null,
+
+target:{
+tp1:null,
+tp2:null,
+tp3:null
+},
+
+riskReward:0
+
+};
+
+}
 
 
 
@@ -280,7 +311,35 @@ function analyzeRisk(
 
     const entryPrice =
     (orderBlock.high + orderBlock.low) / 2;
+const distance =
+Math.abs(price - entryPrice);
 
+
+if(distance > atr * 2){
+
+return {
+
+action:"WAIT CONFIRMATION",
+
+reason:"Price already left order block",
+
+riskLevel:"LOW",
+
+entry:null,
+
+stopLoss:null,
+
+target:{
+tp1:null,
+tp2:null,
+tp3:null
+},
+
+riskReward:0
+
+};
+
+}
 
 
     entry={
