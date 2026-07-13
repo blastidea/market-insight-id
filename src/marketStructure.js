@@ -6,6 +6,8 @@ function analyzeStructure(candles) {
       swingLow: null,
       prevHigh: null,
       prevLow: null,
+      swingHighs: [],
+      swingLows: [],
       totalSwingHigh: 0,
       totalSwingLow: 0,
       structure: "Unknown",
@@ -14,6 +16,7 @@ function analyzeStructure(candles) {
   }
 
   // Twelve Data: candle terbaru di index 0
+  // Dibalik agar urut dari lama -> baru
   const history = [...candles].reverse();
 
   const lookback = 3;
@@ -63,36 +66,36 @@ function analyzeStructure(candles) {
 
   }
 
-  const lastHigh = swingHighs[swingHighs.length - 1] || null;
-  const prevHigh = swingHighs[swingHighs.length - 2] || null;
+  const lastHigh = swingHighs.at(-1) || null;
+  const prevHigh = swingHighs.at(-2) || null;
 
-  const lastLow = swingLows[swingLows.length - 1] || null;
-  const prevLow = swingLows[swingLows.length - 2] || null;
+  const lastLow = swingLows.at(-1) || null;
+  const prevLow = swingLows.at(-2) || null;
 
   let structure = "Range";
   let bias = "Neutral";
 
   if (lastHigh && prevHigh && lastLow && prevLow) {
 
-    const higherHigh = lastHigh.price > prevHigh.price;
-    const lowerHigh = lastHigh.price < prevHigh.price;
+    const HH = lastHigh.price > prevHigh.price;
+    const LH = lastHigh.price < prevHigh.price;
 
-    const higherLow = lastLow.price > prevLow.price;
-    const lowerLow = lastLow.price < prevLow.price;
+    const HL = lastLow.price > prevLow.price;
+    const LL = lastLow.price < prevLow.price;
 
-    if (higherHigh && higherLow) {
+    if (HH && HL) {
       structure = "HH-HL";
       bias = "Bullish";
     }
-    else if (lowerHigh && lowerLow) {
+    else if (LH && LL) {
       structure = "LH-LL";
       bias = "Bearish";
     }
-    else if (higherHigh && lowerLow) {
+    else if (HH && LL) {
       structure = "Expansion";
       bias = "Neutral";
     }
-    else if (lowerHigh && higherLow) {
+    else if (LH && HL) {
       structure = "Compression";
       bias = "Neutral";
     }
@@ -101,11 +104,17 @@ function analyzeStructure(candles) {
 
   return {
 
+    // Swing terakhir
     swingHigh: lastHigh,
     swingLow: lastLow,
 
+    // Swing sebelumnya
     prevHigh,
     prevLow,
+
+    // Semua swing
+    swingHighs,
+    swingLows,
 
     totalSwingHigh: swingHighs.length,
     totalSwingLow: swingLows.length,
