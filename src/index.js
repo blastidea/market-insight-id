@@ -50,19 +50,4 @@ async function main() {
   }
 }
 
-main();    console.log("Close       :", last.close);
-
-  } catch (err) {
-
-    console.log("========== ERROR ==========");
-
-    if (err.response) {
-      console.log(err.response.data);
-    } else {
-      console.log(err.message);
-    }
-
-  }
-}
-
 main();
