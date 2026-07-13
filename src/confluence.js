@@ -45,13 +45,10 @@ function analyzeConfluence(
 
   // Liquidity
   if (liquidity) {
-
-    if (liquidity.type === "Sell Side Sweep")
-      bullish += 10;
-
-    if (liquidity.type === "Buy Side Sweep")
-      bearish += 10;
-
+    if(liquidity.type === "Sell Side")
+    bullish += 10;
+if(liquidity.type === "Buy Side")
+    bearish += 10;
   }
 
 
