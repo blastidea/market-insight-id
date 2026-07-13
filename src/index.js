@@ -512,9 +512,16 @@ async function main() {
     // STATE ENGINE
     // ==========================
 
+    // Pastikan risk.entry memiliki struktur yang benar
+    // Jika risk.entry adalah angka, ubah menjadi object
+    let entryData = risk.entry;
+    if (typeof entryData === 'number' || typeof entryData === 'string') {
+      entryData = { price: Number(entryData) };
+    }
+
     const state = analyzeState(
       Number(last.close),
-      risk.entry,
+      entryData,
       atr14
     );
 
