@@ -38,6 +38,15 @@ async function main() {
     console.log("Close       :", last.close);
 
     // ==========================
+    // History Check
+    // ==========================
+    console.log("");
+    console.log("History Check");
+    console.log("----------------------------");
+    console.log("Oldest Close :", data.history[data.history.length - 1].close);
+    console.log("Newest Close :", data.history[0].close);
+
+    // ==========================
     // Indicator Engine
     // ==========================
     const ema20 = calculateEMA(data.history, 20);
@@ -46,12 +55,18 @@ async function main() {
     console.log("");
     console.log("Indicators");
     console.log("----------------------------");
-    console.log("EMA20      :", ema20);
-    console.log("EMA50      :", ema50);
+    console.log("EMA20       :", ema20);
+    console.log("EMA50       :", ema50);
 
-    if (ema20 !== null && ema50 !== null) {
-      console.log("Trend      :", ema20 > ema50 ? "Bullish 📈" : "Bearish 📉");
+    let trend = "Sideways";
+
+    if (ema20 > ema50) {
+      trend = "Bullish 📈";
+    } else if (ema20 < ema50) {
+      trend = "Bearish 📉";
     }
+
+    console.log("Trend       :", trend);
 
   } catch (err) {
 
