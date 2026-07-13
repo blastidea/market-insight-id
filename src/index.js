@@ -1,31 +1,51 @@
-const axios = require("axios");
+const { getCandles } = require("./market");
 
 async function main() {
   try {
-    const apiKey = process.env.TWELVE_API_KEY;
 
-    console.log("=== Market Insight Indonesia ===");
-    console.log("API Key:", apiKey ? "TERBACA" : "TIDAK TERBACA");
+    console.log("====================================");
+    console.log("Market Insight Indonesia");
+    console.log("====================================");
 
-    if (!apiKey) {
-      throw new Error("TWELVE_API_KEY tidak ditemukan.");
+    const data = await getCandles();
+
+    if (data.status === "error") {
+      console.log(data);
+      return;
     }
 
-    const url = `https://api.twelvedata.com/price?symbol=XAU/USD&apikey=${apiKey}`;
+    const last = data.values[0];
 
-    const response = await axios.get(url);
+    console.log("Symbol      :", data.meta.symbol);
+    console.log("Interval    :", data.meta.interval);
+    console.log("Candles     :", data.values.length);
 
-    console.log("Response:");
-    console.log(JSON.stringify(response.data, null, 2));
+    console.log("");
+
+    console.log("Realtime Price");
+    console.log("----------------------------");
+    console.log("Price       :", last.close);
+
+    console.log("");
+
+    console.log("Latest Candle");
+    console.log("----------------------------");
+    console.log("Datetime    :", last.datetime);
+    console.log("Open        :", last.open);
+    console.log("High        :", last.high);
+    console.log("Low         :", last.low);
+    console.log("Close       :", last.close);
 
   } catch (err) {
-    console.log("ERROR:");
+
+    console.log("========== ERROR ==========");
 
     if (err.response) {
-      console.log(JSON.stringify(err.response.data, null, 2));
+      console.log(err.response.data);
     } else {
       console.log(err.message);
     }
+
   }
 }
 
