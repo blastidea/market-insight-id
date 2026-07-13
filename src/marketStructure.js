@@ -1,3 +1,52 @@
+function filterMajorSwings(swings, type) {
+
+  if (!swings || swings.length < 2) {
+    return swings;
+  }
+
+  const filtered = [];
+
+  for (const current of swings) {
+
+    if (filtered.length === 0) {
+      filtered.push(current);
+      continue;
+    }
+
+    const last = filtered[filtered.length - 1];
+
+    const diffHours =
+      Math.abs(new Date(current.datetime) - new Date(last.datetime)) / 3600000;
+
+    // Jika masih berdekatan (<6 jam), anggap satu swing
+    if (diffHours < 6) {
+
+      if (type === "high") {
+
+        if (current.price > last.price) {
+          filtered[filtered.length - 1] = current;
+        }
+
+      } else {
+
+        if (current.price < last.price) {
+          filtered[filtered.length - 1] = current;
+        }
+
+      }
+
+    } else {
+
+      filtered.push(current);
+
+    }
+
+  }
+
+  return filtered;
+
+}
+
 function analyzeStructure(candles) {
 
   if (!candles || candles.length < 20) {
@@ -66,11 +115,17 @@ function analyzeStructure(candles) {
 
   }
 
-  const lastHigh = swingHighs.at(-1) || null;
-  const prevHigh = swingHighs.at(-2) || null;
+  // ==========================
+  // Filter Major Swing
+  // ==========================
+  const majorHighs = filterMajorSwings(swingHighs, "high");
+  const majorLows = filterMajorSwings(swingLows, "low");
 
-  const lastLow = swingLows.at(-1) || null;
-  const prevLow = swingLows.at(-2) || null;
+  const lastHigh = majorHighs.at(-1) || null;
+  const prevHigh = majorHighs.at(-2) || null;
+
+  const lastLow = majorLows.at(-1) || null;
+  const prevLow = majorLows.at(-2) || null;
 
   let structure = "Range";
   let bias = "Neutral";
@@ -84,40 +139,45 @@ function analyzeStructure(candles) {
     const LL = lastLow.price < prevLow.price;
 
     if (HH && HL) {
+
       structure = "HH-HL";
       bias = "Bullish";
-    }
-    else if (LH && LL) {
+
+    } else if (LH && LL) {
+
       structure = "LH-LL";
       bias = "Bearish";
-    }
-    else if (HH && LL) {
+
+    } else if (HH && LL) {
+
       structure = "Expansion";
       bias = "Neutral";
-    }
-    else if (LH && HL) {
+
+    } else if (LH && HL) {
+
       structure = "Compression";
       bias = "Neutral";
+
     }
 
   }
 
   return {
 
-    // Swing terakhir
+    // Major Swing terakhir
     swingHigh: lastHigh,
     swingLow: lastLow,
 
-    // Swing sebelumnya
+    // Major Swing sebelumnya
     prevHigh,
     prevLow,
 
-    // Semua swing
-    swingHighs,
-    swingLows,
+    // Semua Major Swing
+    swingHighs: majorHighs,
+    swingLows: majorLows,
 
-    totalSwingHigh: swingHighs.length,
-    totalSwingLow: swingLows.length,
+    totalSwingHigh: majorHighs.length,
+    totalSwingLow: majorLows.length,
 
     structure,
     bias
