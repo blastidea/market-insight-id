@@ -21,28 +21,19 @@ function analyzeOrderBlock(
 
   }
 
-
-  // candle terbaru index 0
   const history = [...candles].reverse();
 
-
   let ob = null;
-
+  let fallback = false;
 
   // ==========================
-  // Cari candle sebelum BOS
+  // PERFECT ORDER BLOCK
   // ==========================
 
-  for (
-    let i = history.length - 3;
-    i >= 2;
-    i--
-  ) {
-
+  for (let i = history.length - 3; i >= 2; i--) {
 
     const candle = history[i];
     const next = history[i + 1];
-
 
     const open = Number(candle.open);
     const close = Number(candle.close);
@@ -50,74 +41,111 @@ function analyzeOrderBlock(
     const high = Number(candle.high);
     const low = Number(candle.low);
 
-
     const body = Math.abs(close - open);
 
-
-    // ==========================
-    // Bearish Order Block
-    // candle bullish sebelum drop
-    // ==========================
-
+    // Bearish
     if (
       bos.direction === "Bearish" &&
       close > open &&
-      Number(next.close) < low
+      (
+        Number(next.low) < low ||
+        Number(next.close) < close
+      ) &&
+      body >= atr * 0.3
     ) {
 
-
       ob = {
-
         type: "Bearish",
-
         high,
-
         low,
-
         datetime: candle.datetime
-
       };
-
 
       break;
 
     }
 
-
-
-    // ==========================
-    // Bullish Order Block
-    // candle bearish sebelum rally
-    // ==========================
-
+    // Bullish
     if (
       bos.direction === "Bullish" &&
       close < open &&
-      Number(next.close) > high
+      (
+        Number(next.high) > high ||
+        Number(next.close) > close
+      ) &&
+      body >= atr * 0.3
     ) {
 
-
       ob = {
-
         type: "Bullish",
-
         high,
-
         low,
-
         datetime: candle.datetime
-
       };
-
 
       break;
 
     }
 
-
   }
 
+  // ==========================
+  // FALLBACK ORDER BLOCK
+  // ==========================
 
+  if (!ob) {
+
+    for (let i = history.length - 3; i >= 2; i--) {
+
+      const candle = history[i];
+
+      if (
+        bos.direction === "Bearish" &&
+        Number(candle.close) > Number(candle.open)
+      ) {
+
+        ob = {
+
+          type: "Bearish",
+
+          high: Number(candle.high),
+
+          low: Number(candle.low),
+
+          datetime: candle.datetime
+
+        };
+
+        fallback = true;
+        break;
+
+      }
+
+      if (
+        bos.direction === "Bullish" &&
+        Number(candle.close) < Number(candle.open)
+      ) {
+
+        ob = {
+
+          type: "Bullish",
+
+          high: Number(candle.high),
+
+          low: Number(candle.low),
+
+          datetime: candle.datetime
+
+        };
+
+        fallback = true;
+        break;
+
+      }
+
+    }
+
+  }
 
   if (!ob) {
 
@@ -132,43 +160,38 @@ function analyzeOrderBlock(
       score: 0,
       distance: null,
       datetime: null,
-      fvg:false
+      fvg: false
 
     };
 
   }
 
-
-
-  const price =
-    Number(candles[0].close);
-
-
+  const price = Number(candles[0].close);
 
   const distance =
-    Math.abs(price - ((ob.high + ob.low) / 2));
-
-
+    Math.abs(
+      price - ((ob.high + ob.low) / 2)
+    );
 
   // ==========================
-  // Mitigation Check
+  // STATUS
   // ==========================
 
   let mitigation = "No";
 
-  let status = "Fresh";
-
+  let status = fallback
+    ? "Fallback"
+    : "Fresh";
 
   if (
-    price <= ob.high &&
-    price >= ob.low
+    price >= ob.low &&
+    price <= ob.high
   ) {
 
     mitigation = "Yes";
     status = "Tested";
 
   }
-
 
   if (
     bos.direction === "Bearish" &&
@@ -179,7 +202,6 @@ function analyzeOrderBlock(
 
   }
 
-
   if (
     bos.direction === "Bullish" &&
     price < ob.low
@@ -189,14 +211,11 @@ function analyzeOrderBlock(
 
   }
 
-
-
   // ==========================
-  // FVG Check
+  // FVG
   // ==========================
 
   let fvg = false;
-
 
   for (
     let i = 1;
@@ -205,74 +224,62 @@ function analyzeOrderBlock(
   ) {
 
     const prevHigh =
-      Number(history[i-1].high);
+      Number(history[i - 1].high);
 
     const nextLow =
-      Number(history[i+1].low);
+      Number(history[i + 1].low);
 
+    const prevLow =
+      Number(history[i - 1].low);
 
-    if (nextLow > prevHigh) {
+    const nextHigh =
+      Number(history[i + 1].high);
+
+    if (
+      nextLow > prevHigh ||
+      nextHigh < prevLow
+    ) {
 
       fvg = true;
+      break;
 
     }
 
-
   }
 
-
-
   // ==========================
-  // Score
+  // SCORE
   // ==========================
 
-  let score = 50;
+  let score = 40;
 
-
-  if (bos.strength === "Strong") {
-
+  if (bos.strength === "Strong")
     score += 20;
 
-  }
-
-
-  if (fvg) {
-
+  if (fvg)
     score += 15;
 
-  }
+  if (status === "Fresh")
+    score += 15;
 
-
-  if (status === "Fresh") {
-
+  if (status === "Tested")
     score += 10;
 
-  }
+  if (fallback)
+    score -= 10;
 
-
-  if (status === "Invalid") {
-
+  if (status === "Invalid")
     score = 0;
 
-  }
+  if (score > 95)
+    score = 95;
 
+  let strength = "Weak";
 
-
-  let strength = "Normal";
-
-
-  if (score >= 80) {
-
+  if (score >= 80)
     strength = "Strong";
-
-  }
-  else if (score < 50) {
-
-    strength = "Weak";
-
-  }
-
-
+  else if (score >= 60)
+    strength = "Normal";
 
   return {
 
@@ -294,14 +301,13 @@ function analyzeOrderBlock(
 
     datetime: ob.datetime,
 
-    fvg
+    fvg,
+
+    fallback
 
   };
 
-
 }
-
-
 
 module.exports = {
 
