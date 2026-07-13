@@ -55,27 +55,19 @@ function analyzeConfluence(
   }
 
 
-  // Order Block
-  if (orderBlock) {
-
-    if (orderBlock.type === "Bullish")
-      bullish += 25;
-
-    if (orderBlock.type === "Bearish")
-      bearish += 25;
-
-
-    if (orderBlock.strength === "Strong") {
-
-      if(orderBlock.type === "Bullish")
+ // Order Block
+if (orderBlock) {
+    if(orderBlock.type === "Bullish"){
+      bullish += 15;
+      if(orderBlock.strength === "Strong")
         bullish += 10;
-
-      if(orderBlock.type === "Bearish")
-        bearish += 10;
-
     }
-
-  }
+    if(orderBlock.type === "Bearish"){
+      bearish += 15;
+      if(orderBlock.strength === "Strong")
+        bearish += 10;
+    }
+}
 
 
   // FVG
