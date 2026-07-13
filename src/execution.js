@@ -290,7 +290,7 @@ if(state){
 
 
 
-  // ==========================
+ // ==========================
 // FINAL STATUS
 // ==========================
 
@@ -310,52 +310,37 @@ if(status !== "CANCEL"){
 
 return {
 
+  status,
 
-  return {
-
-    status,
-
-
-    direction:
+  direction:
     decision.bias,
 
-
-    entry:
+  entry:
     risk.entry,
 
-
-    stopLoss:
+  stopLoss:
     risk.stopLoss,
 
-
-    target:
-
+  target:
     risk.target,
 
-
-    riskReward:
+  riskReward:
     risk.riskReward,
 
-
-    confidence:
+  confidence:
     decision.confidence,
 
-
-    reason:
+  reason:
     reason.join(" | "),
 
+  version:"1.3+",
 
-    version:"1.3+",
-
-
-    timestamp:
+  timestamp:
     new Date().toISOString()
 
-  };
-
+};
 
 }
-
 
 
 module.exports={
