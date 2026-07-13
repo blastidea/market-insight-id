@@ -1,80 +1,124 @@
-function analyzeOrderBlock(candles, bos, atr) {
+function analyzeOrderBlock(
+  candles,
+  market,
+  currentPrice,
+  atr
+) {
 
-  let type = "None";
-  let high = null;
-  let low = null;
-  let status = "Waiting";
-  let strength = "Weak";
-  let datetime = null;
-
-
-  if (!candles || candles.length < 10) {
+  if (!candles || candles.length < 20) {
 
     return {
-      type,
-      high,
-      low,
-      status,
-      strength,
-      datetime
+      type: "None",
+      high: null,
+      low: null,
+      status: "Invalid",
+      mitigation: "Unknown",
+      strength: "Weak",
+      score: 0,
+      distance: null,
+      datetime: null
     };
 
   }
 
 
+  // candle terbaru index 0
   const history = [...candles].reverse();
 
 
-  const range = atr ? atr : 0;
-
+  let type = "None";
+  let ob = null;
 
 
   // ==========================
-  // Bearish Order Block
-  // Candle bullish terakhir
-  // sebelum impuls turun
+  // Cari berdasarkan BOS
   // ==========================
 
-  if (bos.direction === "Bearish") {
+  if (market && market.structure) {
 
 
-    for (let i = history.length - 2; i >= 1; i--) {
+    // ==========================
+    // Bearish Order Block
+    // Candle bullish terakhir sebelum turun
+    // ==========================
+
+    if (
+      market.bias === "Bearish" ||
+      market.structure === "LH-LL" ||
+      market.structure === "Compression"
+    ) {
 
 
-      const current = history[i];
-      const next = history[i + 1];
+      for (let i = history.length - 5; i >= 5; i--) {
 
 
-      const open = Number(current.open);
-      const close = Number(current.close);
-
-      const nextClose = Number(next.close);
+        const candle = history[i];
 
 
+        const open = Number(candle.open);
+        const close = Number(candle.close);
 
-      // Candle bullish
-      if (close > open) {
+
+        // bullish candle
+        if (close > open) {
 
 
-        // Candle berikutnya turun kuat
-        if (nextClose < close - range) {
+          ob = {
+
+            high: Number(candle.high),
+            low: Number(candle.low),
+            datetime: candle.datetime
+
+          };
 
 
           type = "Bearish";
-          high = Number(current.high);
-          low = Number(current.low);
-          datetime = current.datetime;
-          status = "Valid";
+
+          break;
+
+        }
+
+      }
+
+    }
 
 
-          if (
-            close - open > range
-          ) {
-            strength = "Strong";
-          } else {
-            strength = "Normal";
-          }
 
+    // ==========================
+    // Bullish Order Block
+    // Candle bearish terakhir sebelum naik
+    // ==========================
+
+    if (
+      market.bias === "Bullish" ||
+      market.structure === "HH-HL"
+    ) {
+
+
+      for (let i = history.length - 5; i >= 5; i--) {
+
+
+        const candle = history[i];
+
+
+        const open = Number(candle.open);
+        const close = Number(candle.close);
+
+
+        // bearish candle
+        if (close < open) {
+
+
+          ob = {
+
+            high: Number(candle.high),
+            low: Number(candle.low),
+            datetime: candle.datetime
+
+          };
+
+
+          type = "Bullish";
 
           break;
 
@@ -88,62 +132,118 @@ function analyzeOrderBlock(candles, bos, atr) {
 
 
 
+  if (!ob) {
+
+
+    return {
+
+      type: "None",
+      high: null,
+      low: null,
+      status: "Not Found",
+      mitigation: "None",
+      strength: "Weak",
+      score: 0,
+      distance: null,
+      datetime: null
+
+    };
+
+  }
+
 
 
   // ==========================
-  // Bullish Order Block
-  // Candle bearish terakhir
-  // sebelum impuls naik
+  // Check Mitigation
   // ==========================
 
-  if (bos.direction === "Bullish") {
+  let mitigation = "Not Tested";
+  let status = "Fresh";
 
 
-    for (let i = history.length - 2; i >= 1; i--) {
-
-
-      const current = history[i];
-      const next = history[i + 1];
-
-
-      const open = Number(current.open);
-      const close = Number(current.close);
-
-      const nextClose = Number(next.close);
+  const price = Number(currentPrice);
 
 
 
-      // Candle bearish
-      if (close < open) {
+  if (
+    price <= ob.high &&
+    price >= ob.low
+  ) {
+
+    mitigation = "Touched";
+    status = "Mitigated";
+
+  }
 
 
-        // Candle berikutnya naik kuat
-        if (nextClose > close + range) {
+
+  // ==========================
+  // Distance
+  // ==========================
+
+  const distance =
+    Math.abs(price - ob.high);
 
 
-          type = "Bullish";
-          high = Number(current.high);
-          low = Number(current.low);
-          datetime = current.datetime;
-          status = "Valid";
+
+  // ==========================
+  // Strength Score
+  // ==========================
+
+  let score = 50;
 
 
-          if (
-            open - close > range
-          ) {
-            strength = "Strong";
-          } else {
-            strength = "Normal";
-          }
+  // OB masih fresh
+  if (status === "Fresh") {
+
+    score += 15;
+
+  }
 
 
-          break;
+  // dekat dengan harga
+  if (atr && distance < atr * 5) {
 
-        }
+    score += 10;
 
-      }
+  }
 
-    }
+
+  // ada BOS
+  if (market && market.structure) {
+
+    score += 10;
+
+  }
+
+
+  // batas
+  if (score > 100) {
+
+    score = 100;
+
+  }
+
+
+
+  let strength = "Normal";
+
+
+  if (score >= 80) {
+
+    strength = "Institutional";
+
+  }
+
+  else if (score >= 65) {
+
+    strength = "Strong";
+
+  }
+
+  else if (score < 50) {
+
+    strength = "Weak";
 
   }
 
@@ -151,19 +251,39 @@ function analyzeOrderBlock(candles, bos, atr) {
 
   return {
 
+
     type,
-    high,
-    low,
+
+    high: ob.high,
+
+    low: ob.low,
+
+
     status,
+
+    mitigation,
+
+
     strength,
-    datetime
+
+    score,
+
+
+    distance: Number(distance.toFixed(2)),
+
+
+    datetime: ob.datetime
+
 
   };
+
 
 }
 
 
 
 module.exports = {
+
   analyzeOrderBlock
+
 };
