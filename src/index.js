@@ -623,8 +623,8 @@ const execution = analyzeExecution(
   atr14
 );
 
-
-console.log("EXECUTION ENGINE v1.3+");
+console.log("");
+console.log("EXECUTION ENGINE");
 console.log("----------------------------");
 
 console.log("Status      :", execution.status);
