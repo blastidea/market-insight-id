@@ -10,13 +10,10 @@ function analyzeConfluence(
   atr
 ) {
 
-
   let score = 50;
 
   let bias = "NEUTRAL";
-
   let setup = "WAIT";
-
 
 
   // ==========================
@@ -28,7 +25,6 @@ function analyzeConfluence(
     score += 10;
 
   }
-
 
   if (trend.includes("Bearish")) {
 
@@ -42,20 +38,19 @@ function analyzeConfluence(
   // BOS
   // ==========================
 
-
   if (bos) {
 
 
     if (bos.direction === "Bullish") {
 
-      score += 15;
+      score += 20;
 
     }
 
 
     if (bos.direction === "Bearish") {
 
-      score -= 15;
+      score -= 20;
 
     }
 
@@ -67,20 +62,19 @@ function analyzeConfluence(
   // CHOCH
   // ==========================
 
-
   if (choch) {
 
 
     if (choch.direction === "Bullish") {
 
-      score += 20;
+      score += 15;
 
     }
 
 
     if (choch.direction === "Bearish") {
 
-      score -= 20;
+      score -= 15;
 
     }
 
@@ -92,24 +86,23 @@ function analyzeConfluence(
   // Liquidity Sweep
   // ==========================
 
-
   if (liquidity) {
-
-
-    if (
-      liquidity.type === "Buy Side Sweep"
-    ) {
-
-      score -= 5;
-
-    }
 
 
     if (
       liquidity.type === "Sell Side Sweep"
     ) {
 
-      score += 5;
+      score += 10;
+
+    }
+
+
+    if (
+      liquidity.type === "Buy Side Sweep"
+    ) {
+
+      score -= 10;
 
     }
 
@@ -117,10 +110,10 @@ function analyzeConfluence(
 
 
 
+
   // ==========================
   // Order Block
   // ==========================
-
 
   if (orderBlock) {
 
@@ -129,7 +122,7 @@ function analyzeConfluence(
       orderBlock.type === "Bullish"
     ) {
 
-      score += 15;
+      score += 20;
 
     }
 
@@ -138,13 +131,69 @@ function analyzeConfluence(
       orderBlock.type === "Bearish"
     ) {
 
+      score -= 20;
+
+    }
+
+
+
+    if (
+      orderBlock.strength === "Strong"
+    ) {
+
+
+      if (
+        orderBlock.type === "Bullish"
+      ) {
+
+        score += 10;
+
+      }
+
+
+      if (
+        orderBlock.type === "Bearish"
+      ) {
+
+        score -= 10;
+
+      }
+
+    }
+
+  }
+
+
+
+
+
+  // ==========================
+  // Fair Value Gap
+  // ==========================
+
+  if (fvg) {
+
+
+    if (
+      fvg.type === "Bullish"
+    ) {
+
+      score += 15;
+
+    }
+
+
+    if (
+      fvg.type === "Bearish"
+    ) {
+
       score -= 15;
 
     }
 
 
     if (
-      orderBlock.strength === "Strong"
+      fvg.strength === "Strong"
     ) {
 
       score += 5;
@@ -155,45 +204,17 @@ function analyzeConfluence(
 
 
 
-  // ==========================
-  // FVG
-  // ==========================
-
-
-  if (fvg) {
-
-
-    if (
-      fvg.type === "Bullish"
-    ) {
-
-      score += 10;
-
-    }
-
-
-    if (
-      fvg.type === "Bearish"
-    ) {
-
-      score -= 10;
-
-    }
-
-  }
-
-
 
   // ==========================
-  // Zone
+  // Market Zone
   // ==========================
-
 
   if (zone) {
 
 
     if (
-      zone.zone.includes("Discount")
+      zone.bias &&
+      zone.bias.includes("BUY")
     ) {
 
       score += 10;
@@ -202,14 +223,17 @@ function analyzeConfluence(
 
 
     if (
-      zone.zone.includes("Premium")
+      zone.bias &&
+      zone.bias.includes("SELL")
     ) {
 
       score -= 10;
 
     }
 
+
   }
+
 
 
 
@@ -217,7 +241,6 @@ function analyzeConfluence(
   // ==========================
   // RSI
   // ==========================
-
 
   if (rsi <= 30) {
 
@@ -234,19 +257,29 @@ function analyzeConfluence(
 
 
 
-  // Limit
 
-  if (score > 95)
-    score = 95;
+  // ==========================
+  // Normalize Score
+  // ==========================
+
+  if (score < 0) {
+
+    score = 0;
+
+  }
 
 
-  if (score < 5)
-    score = 5;
+  if (score > 100) {
+
+    score = 100;
+
+  }
+
 
 
 
   // ==========================
-  // Final Decision
+  // Decision
   // ==========================
 
 
@@ -255,35 +288,25 @@ function analyzeConfluence(
 
     bias = "BULLISH";
 
-
-    setup =
-      "BUY REACTION";
+    setup = "BUY REACTION";
 
 
-  }
-
-
+  } 
   else if (score <= 30) {
 
 
     bias = "BEARISH";
 
-
-    setup =
-      "SELL RETRACEMENT";
+    setup = "SELL RETRACEMENT";
 
 
-  }
-
-
+  } 
   else {
 
 
     bias = "NEUTRAL";
 
-
-    setup =
-      "WAIT CONFIRMATION";
+    setup = "WAIT CONFIRMATION";
 
 
   }
@@ -291,8 +314,12 @@ function analyzeConfluence(
 
 
 
+  // ==========================
+  // Entry / SL / Target
+  // ==========================
+
   let entry = null;
-  let sl = null;
+  let stopLoss = null;
   let target = null;
 
 
@@ -302,11 +329,9 @@ function analyzeConfluence(
 
     entry = {
 
-      high:
-        orderBlock.high,
+      high: orderBlock.high,
 
-      low:
-        orderBlock.low
+      low: orderBlock.low
 
     };
 
@@ -315,13 +340,17 @@ function analyzeConfluence(
 
 
 
-  if (atr && entry) {
+
+  if (
+    entry &&
+    atr
+  ) {
 
 
     if (bias === "BEARISH") {
 
 
-      sl =
+      stopLoss =
         Number(entry.high) +
         Number(atr * 1.5);
 
@@ -339,7 +368,7 @@ function analyzeConfluence(
     if (bias === "BULLISH") {
 
 
-      sl =
+      stopLoss =
         Number(entry.low) -
         Number(atr * 1.5);
 
@@ -352,30 +381,25 @@ function analyzeConfluence(
 
     }
 
-
   }
+
 
 
 
 
   return {
 
-
     bias,
 
     setup,
 
-    confidence:
-      score,
-
+    confidence: score,
 
     entry,
 
-    stopLoss:
-      sl,
+    stopLoss,
 
     target
-
 
   };
 
