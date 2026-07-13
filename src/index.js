@@ -623,8 +623,8 @@ const execution = analyzeExecution(
   atr14
 );
 
-console.log("");
-console.log("EXECUTION ENGINE");
+
+console.log("EXECUTION ENGINE v1.3+");
 console.log("----------------------------");
 
 console.log("Status      :", execution.status);
@@ -636,9 +636,6 @@ console.log("Risk Reward :", execution.riskReward);
 console.log("Confidence  :", execution.confidence + "%");
 console.log("Reason      :", execution.reason);
 console.log("Version     :", execution.version);
-
-}
-    
     
     
    catch (err) {
