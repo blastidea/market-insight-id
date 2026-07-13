@@ -655,15 +655,16 @@ console.log(
 // ==========================
 
 const execution = analyzeExecution(
-  decision,
-  risk,
-  orderBlock,
-  liquidity,
-  bos,
-  choch,
-  data.history,
-  Number(last.close),
-  atr14
+    decision,
+    risk,
+    orderBlock,
+    liquidity,
+    bos,
+    choch,
+    candles,
+    currentPrice,
+    atr,
+    state
 );
 
 console.log("");
