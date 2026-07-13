@@ -417,6 +417,13 @@ console.log("Score       :", orderBlock.score + "%");
 console.log("Distance    :", orderBlock.distance);
 console.log("Datetime    :", orderBlock.datetime);
 
+console.log("Quality     :", orderBlock.quality);
+console.log("Zone Size   :", orderBlock.zoneSize);
+console.log("Location    :", orderBlock.location);
+console.log("Age         :", orderBlock.age);
+console.log("FVG         :", orderBlock.fvg);
+console.log("FVG Strength:", orderBlock.fvgStrength);
+
 // ==========================
 // Fair Value Gap
 // ==========================
