@@ -14,6 +14,10 @@ const {
   analyzeBOS
 } = require("./bos");
 
+const {
+  analyzeCHOCH
+} = require("./choch");
+
 
 async function main() {
 
@@ -317,6 +321,28 @@ console.log("Level       :", bos.level ?? "-");
 console.log("Status      :", bos.status);
 console.log("Strength    :", bos.strength);
 
+// ==========================
+// CHOCH
+// ==========================
+
+const choch = analyzeCHOCH(
+  Number(last.close),
+  market,
+  bos
+);
+
+
+console.log("");
+
+console.log("CHOCH");
+console.log("----------------------------");
+
+console.log("Direction   :", choch.direction);
+console.log("Level       :", choch.level ?? "-");
+console.log("Status      :", choch.status);
+
+    
+    
 
 
   } catch (err) {
