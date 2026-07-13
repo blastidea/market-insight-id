@@ -439,7 +439,10 @@ const zone = analyzeZone(
   Number(last.close),
   market,
   bos,
-  atr14
+  atr14,
+  rsi14,
+  orderBlock,
+  fvg
 );
 
 
