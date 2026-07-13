@@ -1,3 +1,6 @@
+// src/confluence.js
+// AI Confluence Engine v1.2
+
 function analyzeConfluence(
   trend,
   rsi,
@@ -13,13 +16,20 @@ function analyzeConfluence(
   let bullish = 0;
   let bearish = 0;
 
-
+  // ==========================
   // Trend
-  if (trend.includes("Bullish")) bullish += 10;
-  if (trend.includes("Bearish")) bearish += 10;
+  // ==========================
 
+  if (trend.includes("Bullish"))
+    bullish += 10;
 
+  if (trend.includes("Bearish"))
+    bearish += 10;
+
+  // ==========================
   // BOS
+  // ==========================
+
   if (bos) {
 
     if (bos.direction === "Bullish")
@@ -30,8 +40,10 @@ function analyzeConfluence(
 
   }
 
-
+  // ==========================
   // CHOCH
+  // ==========================
+
   if (choch) {
 
     if (choch.direction === "Bullish")
@@ -42,8 +54,10 @@ function analyzeConfluence(
 
   }
 
-
+  // ==========================
   // Liquidity
+  // ==========================
+
   if (liquidity) {
 
     if (liquidity.type === "Sell Side Sweep")
@@ -54,8 +68,10 @@ function analyzeConfluence(
 
   }
 
-
+  // ==========================
   // Order Block
+  // ==========================
+
   if (orderBlock) {
 
     if (orderBlock.type === "Bullish")
@@ -64,43 +80,45 @@ function analyzeConfluence(
     if (orderBlock.type === "Bearish")
       bearish += 25;
 
-
     if (orderBlock.strength === "Strong") {
 
-      if(orderBlock.type === "Bullish")
+      if (orderBlock.type === "Bullish")
         bullish += 10;
 
-      if(orderBlock.type === "Bearish")
+      if (orderBlock.type === "Bearish")
         bearish += 10;
 
     }
 
   }
 
+  // ==========================
+  // Fair Value Gap
+  // ==========================
 
-  // FVG
   if (fvg) {
 
-    if(fvg.type === "Bullish")
+    if (fvg.type === "Bullish")
       bullish += 15;
 
-    if(fvg.type === "Bearish")
+    if (fvg.type === "Bearish")
       bearish += 15;
 
   }
 
-
+  // ==========================
   // Zone
-  if(zone) {
+  // ==========================
 
-    if(
+  if (zone) {
+
+    if (
       zone.bias &&
       zone.bias.includes("BUY")
     )
       bullish += 10;
 
-
-    if(
+    if (
       zone.bias &&
       zone.bias.includes("SELL")
     )
@@ -108,24 +126,25 @@ function analyzeConfluence(
 
   }
 
-
+  // ==========================
   // RSI
-  if(rsi <= 30)
+  // ==========================
+
+  if (rsi <= 30)
     bullish += 5;
 
-  if(rsi >= 70)
+  if (rsi >= 70)
     bearish += 5;
 
-
-
+  // ==========================
   // Decision
+  // ==========================
 
   let bias = "NEUTRAL";
   let setup = "WAIT CONFIRMATION";
   let confidence = 50;
 
-
-  if(bullish > bearish){
+  if (bullish > bearish) {
 
     bias = "BULLISH";
     setup = "BUY REACTION";
@@ -133,8 +152,7 @@ function analyzeConfluence(
 
   }
 
-
-  if(bearish > bullish){
+  if (bearish > bullish) {
 
     bias = "BEARISH";
     setup = "SELL RETRACEMENT";
@@ -142,84 +160,112 @@ function analyzeConfluence(
 
   }
 
-
-  if(confidence > 95)
+  if (confidence > 95)
     confidence = 95;
 
-
-
-  // Entry
+  // ==========================
+  // Trade Plan
+  // ==========================
 
   let entry = null;
   let stopLoss = null;
   let target = null;
-  let rr = null;
+  let rr = 0;
 
-
-
-  if(orderBlock){
+  // hanya gunakan Order Block Fresh
+  if (
+    orderBlock &&
+    orderBlock.status === "Fresh"
+  ) {
 
     entry = {
       high: Number(orderBlock.high),
-      low : Number(orderBlock.low)
+      low: Number(orderBlock.low)
     };
 
   }
 
+  // bangun trade plan
+  if (
+    entry &&
+    atr &&
+    (
+      bias === "BULLISH" ||
+      bias === "BEARISH"
+    )
+  ) {
 
+    if (bias === "BEARISH") {
 
-  if(entry && atr){
+      stopLoss = Number(
+        (
+          entry.high +
+          (atr * 1.5)
+        ).toFixed(5)
+      );
 
-
-    if(bias === "BEARISH"){
-
-      stopLoss =
-        entry.high + (atr * 1.5);
-
-
-      target =
-        entry.low - (atr * 3);
-
-    }
-
-
-
-    if(bias === "BULLISH"){
-
-
-      stopLoss =
-        entry.low - (atr * 1.5);
-
-
-      target =
-        entry.high + (atr * 3);
+      target = Number(
+        (
+          entry.low -
+          (atr * 3)
+        ).toFixed(5)
+      );
 
     }
 
+    if (bias === "BULLISH") {
 
+      stopLoss = Number(
+        (
+          entry.low -
+          (atr * 1.5)
+        ).toFixed(5)
+      );
 
-    let entryPrice =
+      target = Number(
+        (
+          entry.high +
+          (atr * 3)
+        ).toFixed(5)
+      );
+
+    }
+
+    const entryPrice =
       (entry.high + entry.low) / 2;
 
+    const risk =
+      Math.abs(
+        stopLoss - entryPrice
+      );
 
-    let risk =
-      Math.abs(stopLoss - entryPrice);
+    const reward =
+      Math.abs(
+        target - entryPrice
+      );
 
+    if (risk > 0) {
 
-    let reward =
-      Math.abs(target - entryPrice);
-
-
-    if(risk > 0){
-
-      rr =
-        Number((reward / risk).toFixed(2));
+      rr = Number(
+        (
+          reward / risk
+        ).toFixed(2)
+      );
 
     }
+
+  } else {
+
+    entry = null;
+    stopLoss = null;
+    target = null;
+    rr = 0;
 
   }
 
-
+  // ==========================
+  // Return
+  // ==========================
 
   return {
 
@@ -239,13 +285,13 @@ function analyzeConfluence(
 
     target,
 
-    rr
+    rr,
+
+    version: "1.2"
 
   };
 
 }
-
-
 
 module.exports = {
   analyzeConfluence
