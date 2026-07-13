@@ -1,26 +1,22 @@
 // src/execution.js
-// Execution Engine v1.2
+// Execution Engine v1.3+
+// Final Trade Validation Layer
 
 
 function analyzeExecution(
   decision,
+  risk,
   orderBlock,
   liquidity,
   bos,
   choch,
-  confluence,
   history,
   price,
   atr
 ){
 
-  let status = "WAIT";
 
   let reason = [];
-
-  let entry = null;
-
-  let distance = null;
 
 
 
@@ -30,6 +26,7 @@ function analyzeExecution(
 
   if(
     !decision ||
+    !risk ||
     !orderBlock
   ){
 
@@ -37,9 +34,9 @@ function analyzeExecution(
 
       status:"CANCEL",
 
-      reason:"Missing setup",
+      reason:"Missing trading component",
 
-      version:"1.2",
+      version:"1.3+",
 
       timestamp:new Date().toISOString()
 
@@ -47,6 +44,48 @@ function analyzeExecution(
 
   }
 
+
+
+
+
+  // ==========================
+  // RISK VALIDATION
+  // ==========================
+
+
+  if(
+    !risk.entry ||
+    !risk.stopLoss ||
+    !risk.target
+  ){
+
+    return {
+
+      status:"WAIT",
+
+      reason:"Risk plan incomplete",
+
+      version:"1.3+",
+
+      timestamp:new Date().toISOString()
+
+    };
+
+  }
+
+
+
+  reason.push(
+    "Risk plan valid"
+  );
+
+
+
+
+
+  // ==========================
+  // ORDER BLOCK VALIDATION
+  // ==========================
 
 
   if(
@@ -59,7 +98,7 @@ function analyzeExecution(
 
       reason:"No valid order block",
 
-      version:"1.2",
+      version:"1.3+",
 
       timestamp:new Date().toISOString()
 
@@ -68,139 +107,16 @@ function analyzeExecution(
   }
 
 
-
-  // ==========================
-  // ORDER BLOCK CHECK
-  // ==========================
-
-
-  if(
-    decision.bias === "BEARISH"
-  ){
-
-    entry = orderBlock.low;
-
-
-    distance =
-    Math.abs(
-      price - entry
-    );
-
-
-
-    if(
-      price >= orderBlock.low &&
-      price <= orderBlock.high
-    ){
-
-      reason.push(
-        "Inside bearish OB"
-      );
-
-
-    }
-    else if(
-      distance <= atr * 3
-    ){
-
-      reason.push(
-        "Near bearish OB"
-      );
-
-
-    }
-    else{
-
-      return {
-
-        status:"WAIT",
-
-        reason:"Waiting retracement to bearish OB",
-
-        entry,
-
-        distance,
-
-        version:"1.2",
-
-        timestamp:new Date().toISOString()
-
-      };
-
-    }
-
-  }
-
-
-
-
-
-  if(
-    decision.bias === "BULLISH"
-  ){
-
-
-    entry = orderBlock.high;
-
-
-
-    distance =
-    Math.abs(
-      price - entry
-    );
-
-
-
-    if(
-      price >= orderBlock.low &&
-      price <= orderBlock.high
-    ){
-
-      reason.push(
-        "Inside bullish OB"
-      );
-
-
-    }
-    else if(
-      distance <= atr * 3
-    ){
-
-      reason.push(
-        "Near bullish OB"
-      );
-
-
-    }
-    else{
-
-      return {
-
-        status:"WAIT",
-
-        reason:"Waiting retracement to bullish OB",
-
-        entry,
-
-        distance,
-
-        version:"1.2",
-
-        timestamp:new Date().toISOString()
-
-      };
-
-    }
-
-
-  }
+  reason.push(
+    "Order block valid"
+  );
 
 
 
 
 
   // ==========================
-  // BOS FILTER
+  // BOS CONFIRMATION
   // ==========================
 
 
@@ -215,7 +131,7 @@ function analyzeExecution(
 
       reason:"Waiting BOS confirmation",
 
-      version:"1.2",
+      version:"1.3+",
 
       timestamp:new Date().toISOString()
 
@@ -233,70 +149,23 @@ function analyzeExecution(
 
 
   // ==========================
-  // LIQUIDITY FILTER
+  // CONFLUENCE CHECK
   // ==========================
 
 
   if(
-    liquidity &&
-    liquidity.type !== "None"
-  ){
-
-    reason.push(
-      "Liquidity sweep detected"
-    );
-
-
-  }
-  else{
-
-    reason.push(
-      "No liquidity sweep"
-    );
-
-  }
-
-
-
-
-
-  // ==========================
-  // CHOCH CHECK
-  // ==========================
-
-
-  if(
-    choch &&
-    choch.status === "Confirmed"
-  ){
-
-    reason.push(
-      "CHOCH confirmed"
-    );
-
-  }
-
-
-
-
-
-  // ==========================
-  // CONFLUENCE FILTER
-  // ==========================
-
-
-  if(
-    confluence &&
-    confluence.confidence < 60
+    decision.confidence < 60
   ){
 
     return {
 
       status:"WAIT",
 
-      reason:"Low confluence",
+      reason:"Low confidence",
 
-      version:"1.2",
+      confidence:decision.confidence,
+
+      version:"1.3+",
 
       timestamp:new Date().toISOString()
 
@@ -306,7 +175,7 @@ function analyzeExecution(
 
 
   reason.push(
-    "Confluence valid"
+    "Strong confluence"
   );
 
 
@@ -318,7 +187,7 @@ function analyzeExecution(
   // ==========================
 
 
-  let candleConfirm = false;
+  let candleConfirm=false;
 
 
 
@@ -328,38 +197,34 @@ function analyzeExecution(
   ){
 
 
-    let last =
+    const last =
     history[0];
 
 
-    let prev =
+    const prev =
     history[1];
 
 
 
-    // bearish rejection
-
     if(
-      decision.bias === "BEARISH" &&
+      decision.bias==="BEARISH" &&
       last.close < last.open &&
       last.high > prev.high
     ){
 
-      candleConfirm = true;
+      candleConfirm=true;
 
     }
 
 
 
-    // bullish rejection
-
     if(
-      decision.bias === "BULLISH" &&
+      decision.bias==="BULLISH" &&
       last.close > last.open &&
       last.low < prev.low
     ){
 
-      candleConfirm = true;
+      candleConfirm=true;
 
     }
 
@@ -373,9 +238,8 @@ function analyzeExecution(
   if(candleConfirm){
 
     reason.push(
-      "Rejection candle confirmed"
+      "Candle rejection confirmed"
     );
-
 
   }
   else{
@@ -395,17 +259,16 @@ function analyzeExecution(
   // ==========================
 
 
+  let status =
+  "WAIT";
+
+
+
   if(
-    candleConfirm &&
-    bos.status === "Confirmed"
+    candleConfirm
   ){
 
     status="READY";
-
-  }
-  else{
-
-    status="WAIT";
 
   }
 
@@ -417,14 +280,38 @@ function analyzeExecution(
 
     status,
 
+
+    direction:
+    decision.bias,
+
+
+    entry:
+    risk.entry,
+
+
+    stopLoss:
+    risk.stopLoss,
+
+
+    target:
+
+    risk.target,
+
+
+    riskReward:
+    risk.riskReward,
+
+
+    confidence:
+    decision.confidence,
+
+
     reason:
     reason.join(" | "),
 
-    entry,
 
-    distance,
+    version:"1.3+",
 
-    version:"1.2",
 
     timestamp:
     new Date().toISOString()
@@ -436,8 +323,8 @@ function analyzeExecution(
 
 
 
-module.exports = {
+module.exports={
 
-  analyzeExecution
+ analyzeExecution
 
 };
