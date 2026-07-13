@@ -122,7 +122,10 @@ async function main() {
     // ==========================
 // Market Structure
 // ==========================
-const market = analyzeStructure(data.history);
+const market = analyzeStructure(
+  data.history,
+  atr14
+);
 
 console.log("");
 console.log("Market Structure");
