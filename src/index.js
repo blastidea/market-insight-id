@@ -30,6 +30,11 @@ const {
   analyzeFVG
 } = require("./fvg");
 
+const {
+  analyzeZone
+} = require("./zone");
+
+
 async function main() {
 
   try {
@@ -425,6 +430,29 @@ console.log("Strength    :", fvg.strength);
 console.log("Score       :", fvg.score + "%");
 console.log("Datetime    :", fvg.datetime);
 
+
+// ==========================
+// Premium Discount Zone
+// ==========================
+
+const zone = analyzeZone(
+  market,
+  Number(last.close)
+);
+
+
+console.log("");
+
+console.log("Market Zone");
+console.log("----------------------------");
+
+console.log("Zone        :", zone.zone);
+console.log("High        :", zone.high);
+console.log("Low         :", zone.low);
+console.log("Equilibrium :", zone.equilibrium);
+console.log("Fib 0.618   :", zone.fib618);
+console.log("Fib 0.382   :", zone.fib382);
+console.log("Score       :", zone.score + "%");
     
     
   } catch (err) {
