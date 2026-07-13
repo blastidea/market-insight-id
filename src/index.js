@@ -83,13 +83,35 @@ async function main() {
     console.log("Market Status");
     console.log("----------------------------");
 
-    if (trend === "Bullish 📈" && rsi14 < 70) {
-      console.log("Bias        : BUY");
-    } else if (trend === "Bearish 📉" && rsi14 > 30) {
-      console.log("Bias        : SELL");
-    } else {
-      console.log("Bias        : WAIT");
+    let momentum = "Neutral";
+
+    if (rsi14 >= 70) {
+      momentum = "Overbought";
+    } else if (rsi14 <= 30) {
+      momentum = "Oversold";
     }
+
+    let bias = "Neutral";
+
+    if (trend.includes("Bullish")) {
+      bias = "Bullish";
+    } else if (trend.includes("Bearish")) {
+      bias = "Bearish";
+    }
+
+    let action = "Wait Confirmation";
+
+    if (trend.includes("Bullish") && rsi14 > 50 && rsi14 < 70) {
+      action = "Look for BUY";
+    }
+
+    if (trend.includes("Bearish") && rsi14 > 30 && rsi14 < 50) {
+      action = "Look for SELL";
+    }
+
+    console.log("Momentum    :", momentum);
+    console.log("Bias        :", bias);
+    console.log("Action      :", action);
 
   } catch (err) {
 
