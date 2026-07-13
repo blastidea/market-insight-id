@@ -12,11 +12,12 @@ function analyzeExecution(
   choch,
   history,
   price,
-  atr
+  atr,
+  state
 ){
 
-
   let reason = [];
+  let status = "WAIT";
 
 
 
@@ -54,32 +55,67 @@ function analyzeExecution(
 
 
   if(
-    !risk.entry ||
-    !risk.stopLoss ||
-    !risk.target
-  ){
+ !risk.entry ||
+ !risk.stopLoss ||
+ !risk.target
+){
 
-    return {
+return {
 
-      status:"WAIT",
+status:"WAIT",
 
-      reason:"Risk plan incomplete",
+direction:
+decision ? decision.bias : null,
 
-      version:"1.3+",
+reason:
+risk.reason || "Risk plan incomplete",
 
-      timestamp:new Date().toISOString()
+version:"1.3+",
 
-    };
+timestamp:new Date().toISOString()
 
-  }
+};
 
+}
 
 
   reason.push(
     "Risk plan valid"
   );
 
+// ==========================
+// STATE VALIDATION
+// ==========================
 
+if(state){
+
+  if(state.state === "MISSED"){
+
+    status = "CANCEL";
+
+    reason.push(
+      "Price already left setup area"
+    );
+
+  }
+
+  else if(state.state === "WAIT_RETRACE"){
+
+    reason.push(
+      "Waiting retrace into Order Block"
+    );
+
+  }
+
+  else if(state.state === "READY"){
+
+    reason.push(
+      "Price inside entry zone"
+    );
+
+  }
+
+}
 
 
 
@@ -254,73 +290,57 @@ function analyzeExecution(
 
 
 
-  // ==========================
-  // FINAL STATUS
-  // ==========================
+ // ==========================
+// FINAL STATUS
+// ==========================
 
+if(status !== "CANCEL"){
 
-  let status =
-  "WAIT";
+  if(candleConfirm){
 
+    status = "READY";
 
+  }else{
 
-  if(
-    candleConfirm
-  ){
-
-    status="READY";
+    status = "WAIT";
 
   }
 
-
-
-
-
-  return {
-
-    status,
-
-
-    direction:
-    decision.bias,
-
-
-    entry:
-    risk.entry,
-
-
-    stopLoss:
-    risk.stopLoss,
-
-
-    target:
-
-    risk.target,
-
-
-    riskReward:
-    risk.riskReward,
-
-
-    confidence:
-    decision.confidence,
-
-
-    reason:
-    reason.join(" | "),
-
-
-    version:"1.3+",
-
-
-    timestamp:
-    new Date().toISOString()
-
-  };
-
-
 }
 
+return {
+
+  status,
+
+  direction:
+    decision.bias,
+
+  entry:
+    risk.entry,
+
+  stopLoss:
+    risk.stopLoss,
+
+  target:
+    risk.target,
+
+  riskReward:
+    risk.riskReward,
+
+  confidence:
+    decision.confidence,
+
+  reason:
+    reason.join(" | "),
+
+  version:"1.3+",
+
+  timestamp:
+    new Date().toISOString()
+
+};
+
+}
 
 
 module.exports={
