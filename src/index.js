@@ -26,6 +26,10 @@ const {
   analyzeOrderBlock
 } = require("./orderBlock");
 
+const {
+  analyzeFVG
+} = require("./fvg");
+
 async function main() {
 
   try {
@@ -396,6 +400,32 @@ console.log("Strength    :", orderBlock.strength);
 console.log("Score       :", orderBlock.score + "%");
 console.log("Distance    :", orderBlock.distance);
 console.log("Datetime    :", orderBlock.datetime);
+
+// ==========================
+// Fair Value Gap
+// ==========================
+
+const fvg = analyzeFVG(
+  data.history,
+  atr14
+);
+
+
+console.log("");
+
+console.log("Fair Value Gap");
+console.log("----------------------------");
+
+console.log("Type        :", fvg.type);
+console.log("High        :", fvg.high ?? "-");
+console.log("Low         :", fvg.low ?? "-");
+console.log("Status      :", fvg.status);
+console.log("Filled      :", fvg.filled);
+console.log("Strength    :", fvg.strength);
+console.log("Score       :", fvg.score + "%");
+console.log("Datetime    :", fvg.datetime);
+
+    
     
   } catch (err) {
 
