@@ -644,7 +644,7 @@ console.log(
 console.log("Reason      :", execution.reason ?? "-");
 console.log("Version     :", execution.version ?? "-");
 
-}
+
     
     console.log("");
 
@@ -673,6 +673,7 @@ console.log(
     : "-"
 );
 
+    }
     
    catch (err) {
 
