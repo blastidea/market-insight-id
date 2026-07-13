@@ -1,0 +1,4 @@
+analyzeBOS(
+    currentPrice,
+    marketStructure
+)
