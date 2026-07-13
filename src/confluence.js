@@ -157,7 +157,12 @@ function analyzeConfluence(
 
 
 
-  if(orderBlock){
+  if (
+    orderBlock &&
+    orderBlock.type !== "None" &&
+    orderBlock.high != null &&
+    orderBlock.low != null
+){
 
     entry = {
       high: Number(orderBlock.high),
@@ -168,7 +173,12 @@ function analyzeConfluence(
 
 
 
-  if(entry && atr){
+ if(
+    entry &&
+    entry.high != null &&
+    entry.low != null &&
+    atr
+){
 
 
     if(bias === "BEARISH"){
