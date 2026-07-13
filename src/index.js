@@ -612,11 +612,12 @@ console.log(
     : "-"
 );
 
-    // ==========================
+   // ==========================
 // STATE ENGINE
 // ==========================
+
 const state = analyzeState(
-  currentPrice,
+  price,
   risk.entry,
   atr
 );
@@ -650,6 +651,7 @@ console.log(
   "Entry         :",
   state.entry
 );
+  
     // ==========================
 // Execution Engine
 // ==========================
@@ -662,11 +664,11 @@ const execution = analyzeExecution(
     bos,
     choch,
     candles,
-    currentPrice,
+    price,
     atr,
     state
 );
-
+    
 console.log("");
 console.log("EXECUTION ENGINE");
 console.log("----------------------------");
