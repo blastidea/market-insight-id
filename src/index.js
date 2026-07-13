@@ -14,11 +14,11 @@ async function main() {
       return;
     }
 
-    const last = data.values[0];
+    const last = data.latest;
 
-    console.log("Symbol      :", data.meta.symbol);
-    console.log("Interval    :", data.meta.interval);
-    console.log("Candles     :", data.values.length);
+    console.log("Symbol      :", data.symbol);
+    console.log("Interval    :", data.interval);
+    console.log("Candles     :", data.candles);
 
     console.log("");
 
@@ -35,6 +35,22 @@ async function main() {
     console.log("High        :", last.high);
     console.log("Low         :", last.low);
     console.log("Close       :", last.close);
+
+  } catch (err) {
+
+    console.log("");
+    console.log("========== ERROR ==========");
+
+    if (err.response) {
+      console.log(err.response.data);
+    } else {
+      console.log(err.message);
+    }
+
+  }
+}
+
+main();    console.log("Close       :", last.close);
 
   } catch (err) {
 
