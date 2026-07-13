@@ -1,6 +1,6 @@
 const {
- getMultiTimeframe
-} = require("./src/timeframe");
+  getMultiTimeframe
+} = require("./timeframe");
 
 (async()=>{
 
