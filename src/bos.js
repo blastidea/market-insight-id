@@ -6,6 +6,7 @@ function analyzeBOS(currentPrice, market, atr) {
   let strength = "Weak";
 
   if (
+    currentPrice == null ||
     !market ||
     !market.prevHigh ||
     !market.prevLow ||
@@ -22,24 +23,25 @@ function analyzeBOS(currentPrice, market, atr) {
 
   }
 
+  currentPrice = Number(currentPrice);
+
   const minBreak =
     atr
-      ? atr * 0.3
+      ? atr * 0.30
       : 3;
 
   // ==========================
   // Bullish BOS
+  // Higher High + harga sudah break
   // ==========================
 
   if (
-
-    market.swingHigh.price >
-    market.prevHigh.price
-
+    market.swingHigh.price > market.prevHigh.price &&
+    currentPrice > market.prevHigh.price
   ) {
 
     const distance =
-      market.swingHigh.price -
+      currentPrice -
       market.prevHigh.price;
 
     if (distance >= minBreak) {
@@ -59,18 +61,17 @@ function analyzeBOS(currentPrice, market, atr) {
 
   // ==========================
   // Bearish BOS
+  // Lower Low + harga sudah break
   // ==========================
 
   if (
-
-    market.swingLow.price <
-    market.prevLow.price
-
+    market.swingLow.price < market.prevLow.price &&
+    currentPrice < market.prevLow.price
   ) {
 
     const distance =
       market.prevLow.price -
-      market.swingLow.price;
+      currentPrice;
 
     if (distance >= minBreak) {
 
@@ -88,38 +89,38 @@ function analyzeBOS(currentPrice, market, atr) {
   }
 
   // ==========================
-  // Jika keduanya terjadi
+  // Expansion
+  // HH + LL sama-sama terjadi
   // ==========================
 
+  const bullishExpansion =
+    market.swingHigh.price > market.prevHigh.price &&
+    currentPrice > market.prevHigh.price;
+
+  const bearishExpansion =
+    market.swingLow.price < market.prevLow.price &&
+    currentPrice < market.prevLow.price;
+
   if (
-
-    market.swingHigh.price >
-    market.prevHigh.price &&
-
-    market.swingLow.price <
-    market.prevLow.price
-
+    bullishExpansion &&
+    bearishExpansion
   ) {
 
-    if (
-      currentPrice <
+    const midpoint =
       (
         market.prevHigh.price +
         market.prevLow.price
-      ) / 2
-    ) {
+      ) / 2;
+
+    if (currentPrice < midpoint) {
 
       direction = "Bearish";
-
-      level =
-        market.prevLow.price;
+      level = market.prevLow.price;
 
     } else {
 
       direction = "Bullish";
-
-      level =
-        market.prevHigh.price;
+      level = market.prevHigh.price;
 
     }
 
