@@ -72,7 +72,7 @@ const CONFIG = {
   // Pengaturan Sistem
   system: {
     autoUpdate: true,
-    updateInterval: 60000,      // 60 detik
+    updateInterval: '1h',      // 60 detik
     minCandles: 50,
     logLevel: 'INFO'            // INFO, WARNING, ERROR, DEBUG
   }
