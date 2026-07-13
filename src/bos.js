@@ -5,63 +5,128 @@ function analyzeBOS(currentPrice, market, atr) {
   let status = "Waiting";
   let strength = "Weak";
 
+  if (
+    !market ||
+    !market.prevHigh ||
+    !market.prevLow ||
+    !market.swingHigh ||
+    !market.swingLow
+  ) {
 
-  const minBreak = atr ? atr * 0.5 : 0;
-
-
-  // ==========================
-  // Bearish BOS
-  // ==========================
-
-  if (market.swingLow) {
-
-    const breakDown =
-      market.swingLow.price - currentPrice;
-
-
-    if (breakDown > minBreak) {
-
-      direction = "Bearish";
-      level = market.swingLow.price;
-      status = "Confirmed";
-
-
-      if (breakDown > atr) {
-        strength = "Strong";
-      }
-
-    }
+    return {
+      direction,
+      level,
+      status,
+      strength
+    };
 
   }
 
-
+  const minBreak =
+    atr
+      ? atr * 0.3
+      : 3;
 
   // ==========================
   // Bullish BOS
   // ==========================
 
-  if (market.swingHigh) {
+  if (
 
-    const breakUp =
-      currentPrice - market.swingHigh.price;
+    market.swingHigh.price >
+    market.prevHigh.price
 
+  ) {
 
-    if (breakUp > minBreak) {
+    const distance =
+      market.swingHigh.price -
+      market.prevHigh.price;
+
+    if (distance >= minBreak) {
 
       direction = "Bullish";
-      level = market.swingHigh.price;
+      level = market.prevHigh.price;
       status = "Confirmed";
 
-
-      if (breakUp > atr) {
-        strength = "Strong";
-      }
+      strength =
+        distance >= atr
+          ? "Strong"
+          : "Normal";
 
     }
 
   }
 
+  // ==========================
+  // Bearish BOS
+  // ==========================
 
+  if (
+
+    market.swingLow.price <
+    market.prevLow.price
+
+  ) {
+
+    const distance =
+      market.prevLow.price -
+      market.swingLow.price;
+
+    if (distance >= minBreak) {
+
+      direction = "Bearish";
+      level = market.prevLow.price;
+      status = "Confirmed";
+
+      strength =
+        distance >= atr
+          ? "Strong"
+          : "Normal";
+
+    }
+
+  }
+
+  // ==========================
+  // Jika keduanya terjadi
+  // ==========================
+
+  if (
+
+    market.swingHigh.price >
+    market.prevHigh.price &&
+
+    market.swingLow.price <
+    market.prevLow.price
+
+  ) {
+
+    if (
+      currentPrice <
+      (
+        market.prevHigh.price +
+        market.prevLow.price
+      ) / 2
+    ) {
+
+      direction = "Bearish";
+
+      level =
+        market.prevLow.price;
+
+    } else {
+
+      direction = "Bullish";
+
+      level =
+        market.prevHigh.price;
+
+    }
+
+    status = "Confirmed";
+    strength = "Strong";
+
+  }
 
   return {
 
@@ -73,8 +138,6 @@ function analyzeBOS(currentPrice, market, atr) {
   };
 
 }
-
-
 
 module.exports = {
   analyzeBOS
