@@ -608,7 +608,7 @@ console.log("Risk Reward   :", risk.riskReward);
 
 
     // ==========================
-// Execution Engine v1.2
+// Execution Engine
 // ==========================
 
 const execution = analyzeExecution(
