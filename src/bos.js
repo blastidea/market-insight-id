@@ -1,53 +1,79 @@
-function analyzeBOS(currentPrice, market) {
+function analyzeBOS(currentPrice, market, atr) {
 
   let direction = "None";
   let level = null;
   let status = "Waiting";
+  let strength = "Weak";
+
+
+  const minBreak = atr ? atr * 0.5 : 0;
 
 
   // ==========================
   // Bearish BOS
-  // Break Last Swing Low
   // ==========================
 
-  if (
-    market.swingLow &&
-    currentPrice < market.swingLow.price
-  ) {
+  if (market.swingLow) {
 
-    direction = "Bearish";
-    level = market.swingLow.price;
-    status = "Confirmed";
+    const breakDown =
+      market.swingLow.price - currentPrice;
+
+
+    if (breakDown > minBreak) {
+
+      direction = "Bearish";
+      level = market.swingLow.price;
+      status = "Confirmed";
+
+
+      if (breakDown > atr) {
+        strength = "Strong";
+      }
+
+    }
 
   }
+
 
 
   // ==========================
   // Bullish BOS
-  // Break Last Swing High
   // ==========================
 
-  else if (
-    market.swingHigh &&
-    currentPrice > market.swingHigh.price
-  ) {
+  if (market.swingHigh) {
 
-    direction = "Bullish";
-    level = market.swingHigh.price;
-    status = "Confirmed";
+    const breakUp =
+      currentPrice - market.swingHigh.price;
+
+
+    if (breakUp > minBreak) {
+
+      direction = "Bullish";
+      level = market.swingHigh.price;
+      status = "Confirmed";
+
+
+      if (breakUp > atr) {
+        strength = "Strong";
+      }
+
+    }
 
   }
+
 
 
   return {
 
     direction,
     level,
-    status
+    status,
+    strength
 
   };
 
 }
+
 
 
 module.exports = {
