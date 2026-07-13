@@ -477,7 +477,11 @@ console.log("Distance    :", zone.distance);
 console.log("Score       :", zone.score + "%");
 
 
-    const decision = analyzeConfluence(
+    // ==========================
+// AI CONFLUENCE
+// ==========================
+
+const decision = analyzeConfluence(
   trend,
   rsi14,
   bos,
@@ -495,15 +499,56 @@ console.log("");
 console.log("AI MARKET DECISION");
 console.log("----------------------------");
 
-console.log("Bias        :", decision.bias);
-console.log("Setup       :", decision.setup);
-console.log("Confidence  :", decision.confidence + "%");
+console.log(
+  "Bullish Score :",
+  decision.bullishScore
+);
 
-console.log("Entry       :", decision.entry);
+console.log(
+  "Bearish Score :",
+  decision.bearishScore
+);
 
-console.log("Stop Loss   :", decision.stopLoss);
+console.log(
+  "Bias          :",
+  decision.bias
+);
 
-console.log("Target      :", decision.target);
+console.log(
+  "Setup         :",
+  decision.setup
+);
+
+console.log(
+  "Confidence    :",
+  decision.confidence + "%"
+);
+
+
+console.log("");
+
+console.log("Trade Plan");
+console.log("----------------------------");
+
+console.log(
+  "Entry         :",
+  decision.entry
+);
+
+console.log(
+  "Stop Loss     :",
+  decision.stopLoss
+);
+
+console.log(
+  "Target        :",
+  decision.target
+);
+
+console.log(
+  "Risk Reward   :",
+  decision.rr
+);
     
     
   } catch (err) {
