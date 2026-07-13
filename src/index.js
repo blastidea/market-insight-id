@@ -563,10 +563,11 @@ console.log(
 
 
 const risk = analyzeRisk(
-  decision.confidence,
-  decision.rr,
-  decision.bias,
-  decision.setup
+ decision,
+ orderBlock,
+ liquidity,
+ atr14,
+ Number(last.close)
 );
 
 
@@ -575,21 +576,14 @@ console.log("");
 console.log("RISK ENGINE");
 console.log("----------------------------");
 
-console.log(
-  "Action        :",
-  risk.action
-);
+console.log("Action        :",risk.action);
+console.log("Reason        :",risk.reason);
+console.log("Risk Level    :",risk.riskLevel);
 
-console.log(
-  "Reason        :",
-  risk.reason
-);
-
-console.log(
-  "Risk Level    :",
-  risk.riskLevel
-);
-
+console.log("Entry         :",risk.entry ?? "-");
+console.log("Stop Loss     :",risk.stopLoss ?? "-");
+console.log("Target        :",risk.target ?? "-");
+console.log("Risk Reward   :",risk.riskReward ?? "-");
 
     
     
