@@ -4,6 +4,10 @@ function analyzeStructure(candles) {
     return {
       swingHigh: null,
       swingLow: null,
+      prevHigh: null,
+      prevLow: null,
+      totalSwingHigh: 0,
+      totalSwingLow: 0,
       structure: "Unknown",
       bias: "Unknown"
     };
@@ -59,31 +63,38 @@ function analyzeStructure(candles) {
 
   }
 
-  const lastHigh = swingHighs[swingHighs.length - 1];
-  const prevHigh = swingHighs[swingHighs.length - 2];
+  const lastHigh = swingHighs[swingHighs.length - 1] || null;
+  const prevHigh = swingHighs[swingHighs.length - 2] || null;
 
-  const lastLow = swingLows[swingLows.length - 1];
-  const prevLow = swingLows[swingLows.length - 2];
+  const lastLow = swingLows[swingLows.length - 1] || null;
+  const prevLow = swingLows[swingLows.length - 2] || null;
 
   let structure = "Range";
   let bias = "Neutral";
 
   if (lastHigh && prevHigh && lastLow && prevLow) {
 
-    if (
-      lastHigh.price > prevHigh.price &&
-      lastLow.price > prevLow.price
-    ) {
+    const higherHigh = lastHigh.price > prevHigh.price;
+    const lowerHigh = lastHigh.price < prevHigh.price;
+
+    const higherLow = lastLow.price > prevLow.price;
+    const lowerLow = lastLow.price < prevLow.price;
+
+    if (higherHigh && higherLow) {
       structure = "HH-HL";
       bias = "Bullish";
     }
-
-    else if (
-      lastHigh.price < prevHigh.price &&
-      lastLow.price < prevLow.price
-    ) {
+    else if (lowerHigh && lowerLow) {
       structure = "LH-LL";
       bias = "Bearish";
+    }
+    else if (higherHigh && lowerLow) {
+      structure = "Expansion";
+      bias = "Neutral";
+    }
+    else if (lowerHigh && higherLow) {
+      structure = "Compression";
+      bias = "Neutral";
     }
 
   }
@@ -92,6 +103,9 @@ function analyzeStructure(candles) {
 
     swingHigh: lastHigh,
     swingLow: lastLow,
+
+    prevHigh,
+    prevLow,
 
     totalSwingHigh: swingHighs.length,
     totalSwingLow: swingLows.length,
