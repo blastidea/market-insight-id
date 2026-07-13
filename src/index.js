@@ -1,45 +1,59 @@
 const { getCandles } = require("./market");
+
 const {
   calculateEMA,
   calculateRSI,
   calculateATR
 } = require("./indicators");
+
 const {
   analyzeStructure
 } = require("./marketStructure");
+
 const {
   analyzeBOS
 } = require("./bos");
+
 const {
   analyzeCHOCH
 } = require("./choch");
+
 const {
   analyzeLiquidity
 } = require("./liquidity");
+
 const {
   analyzeOrderBlock
 } = require("./orderBlock");
+
 const {
   analyzeFVG
 } = require("./fvg");
+
 const {
   analyzeZone
 } = require("./zone");
+
 const {
   analyzeConfluence
 } = require("./confluence");
+
 const {
   analyzeRisk
 } = require("./risk");
+
 const {
   analyzeExecution
 } = require("./execution");
+
 const {
   analyzeState
 } = require("./state");
 
 async function main() {
+
   try {
+
     console.log("====================================");
     console.log("Market Insight Indonesia");
     console.log("====================================");
@@ -51,29 +65,20 @@ async function main() {
       return;
     }
 
-    // Validasi data
-    if (!data || !data.history || data.history.length < 50) {
-      console.log("⚠️ Data tidak cukup. Minimal 50 candle diperlukan.");
-      return;
-    }
-
-    if (!data.latest) {
-      console.log("⚠️ Data harga terkini tidak tersedia.");
-      return;
-    }
-
     const last = data.latest;
-    const price = Number(last.close);
-    const candles = data.history;
 
     console.log("Symbol      :", data.symbol);
     console.log("Interval    :", data.interval);
     console.log("Candles     :", data.candles);
+
     console.log("");
+
     console.log("Realtime Price");
     console.log("----------------------------");
-    console.log("Price       :", price);
+    console.log("Price       :", last.close);
+
     console.log("");
+
     console.log("Latest Candle");
     console.log("----------------------------");
     console.log("Datetime    :", last.datetime);
@@ -85,6 +90,7 @@ async function main() {
     // ==========================
     // History Check
     // ==========================
+
     console.log("");
     console.log("History Check");
     console.log("----------------------------");
@@ -92,6 +98,7 @@ async function main() {
       "Oldest Close :",
       data.history[data.history.length - 1].close
     );
+
     console.log(
       "Newest Close :",
       data.history[0].close
@@ -100,6 +107,7 @@ async function main() {
     // ==========================
     // Indicator Engine
     // ==========================
+
     const ema20 = calculateEMA(data.history, 20);
     const ema50 = calculateEMA(data.history, 50);
     const rsi14 = calculateRSI(data.history, 14);
@@ -124,10 +132,11 @@ async function main() {
     // ==========================
     // Market Status
     // ==========================
+
     console.log("");
+
     console.log("Market Status");
     console.log("----------------------------");
-    
     let momentum = "Neutral";
     if (rsi14 >= 70) {
       momentum = "Overbought";
@@ -136,20 +145,28 @@ async function main() {
     }
 
     let bias = "Neutral";
+
     if (trend.includes("Bullish")) {
       bias = "Bullish";
     } else if (trend.includes("Bearish")) {
       bias = "Bearish";
     }
-
     let action = "Wait Confirmation";
-    if (trend.includes("Bullish") && rsi14 > 50 && rsi14 < 70) {
+    if (
+      trend.includes("Bullish") &&
+      rsi14 > 50 &&
+      rsi14 < 70
+    ) {
       action = "Look for BUY";
     }
-    if (trend.includes("Bearish") && rsi14 > 30 && rsi14 < 50) {
+
+    if (
+      trend.includes("Bearish") &&
+      rsi14 > 30 &&
+      rsi14 < 50
+    ) {
       action = "Look for SELL";
     }
-    
     console.log("Momentum    :", momentum);
     console.log("Bias        :", bias);
     console.log("Action      :", action);
@@ -157,30 +174,42 @@ async function main() {
     // ==========================
     // Market Structure
     // ==========================
-    const market = analyzeStructure(data.history, atr14);
+
+    const market = analyzeStructure(
+      data.history,
+      atr14
+    );
     console.log("");
+
     console.log("Market Structure");
     console.log("----------------------------");
+
     console.log(
       "Last High   :",
       market.swingHigh ? market.swingHigh.price : "-"
     );
+
     console.log(
       "Prev High   :",
       market.prevHigh ? market.prevHigh.price : "-"
     );
+
     console.log("");
+
     console.log(
       "Last Low    :",
       market.swingLow ? market.swingLow.price : "-"
     );
+
     console.log(
       "Prev Low    :",
       market.prevLow ? market.prevLow.price : "-"
     );
+
     console.log("");
     console.log("High Count  :", market.totalSwingHigh);
     console.log("Low Count   :", market.totalSwingLow);
+    
     console.log("");
     console.log("Structure   :", market.structure);
     console.log("Bias        :", market.bias);
@@ -191,29 +220,50 @@ async function main() {
     console.log("");
     console.log("Recent Swing Highs");
     console.log("----------------------------");
-    const recentHighs = market.swingHighs.slice(-5).reverse();
+
+    const recentHighs =
+      market.swingHighs
+      .slice(-5)
+      .reverse();
+
     recentHighs.forEach((item, index) => {
-      console.log(`${index + 1}. ${item.price} | ${item.datetime}`);
+      console.log(
+        `${index + 1}. ${item.price} | ${item.datetime}`
+      );
     });
 
     // ==========================
     // Recent Swing Lows
     // ==========================
+
     console.log("");
     console.log("Recent Swing Lows");
     console.log("----------------------------");
-    const recentLows = market.swingLows.slice(-5).reverse();
+
+    const recentLows =
+      market.swingLows
+      .slice(-5)
+      .reverse();
     recentLows.forEach((item, index) => {
-      console.log(`${index + 1}. ${item.price} | ${item.datetime}`);
+      console.log(
+        `${index + 1}. ${item.price} | ${item.datetime}`
+      );
     });
 
     // ==========================
     // Break Of Structure (BOS)
     // ==========================
-    const bos = analyzeBOS(price, market, atr14);
+
+    const bos = analyzeBOS(
+      Number(last.close),
+      market,
+      atr14
+    );
+
     console.log("");
     console.log("BOS");
     console.log("----------------------------");
+
     console.log("Direction   :", bos.direction);
     console.log("Level       :", bos.level ?? "-");
     console.log("Status      :", bos.status);
@@ -222,10 +272,18 @@ async function main() {
     // ==========================
     // CHOCH
     // ==========================
-    const choch = analyzeCHOCH(price, market, bos);
+
+    const choch = analyzeCHOCH(
+      Number(last.close),
+      market,
+      bos
+    );
+
     console.log("");
+
     console.log("CHOCH");
     console.log("----------------------------");
+
     console.log("Direction   :", choch.direction);
     console.log("Level       :", choch.level ?? "-");
     console.log("Status      :", choch.status);
@@ -233,7 +291,14 @@ async function main() {
     // ==========================
     // Liquidity
     // ==========================
-    const liquidity = analyzeLiquidity(data.history, market, bos, atr14);
+    
+    const liquidity = analyzeLiquidity(
+      data.history,
+      market,
+      bos,
+      atr14
+    );
+
     console.log("");
     console.log("Liquidity Sweep");
     console.log("----------------------------");
@@ -246,10 +311,17 @@ async function main() {
     // ==========================
     // Order Block
     // ==========================
-    const orderBlock = analyzeOrderBlock(data.history, bos, atr14);
+
+    const orderBlock = analyzeOrderBlock(
+      data.history,
+      bos,
+      atr14
+    );
+
     console.log("");
     console.log("Order Block");
     console.log("----------------------------");
+
     console.log("Type        :", orderBlock.type);
     console.log("Zone High   :", orderBlock.high);
     console.log("Zone Low    :", orderBlock.low);
@@ -259,6 +331,7 @@ async function main() {
     console.log("Score       :", orderBlock.score + "%");
     console.log("Distance    :", orderBlock.distance);
     console.log("Datetime    :", orderBlock.datetime);
+
     console.log("Quality     :", orderBlock.quality);
     console.log("Zone Size   :", orderBlock.zoneSize);
     console.log("Location    :", orderBlock.location);
@@ -269,10 +342,17 @@ async function main() {
     // ==========================
     // Fair Value Gap
     // ==========================
-    const fvg = analyzeFVG(data.history, atr14);
+
+    const fvg = analyzeFVG(
+      data.history,
+      atr14
+    );
+
     console.log("");
+
     console.log("Fair Value Gap");
     console.log("----------------------------");
+
     console.log("Type        :", fvg.type);
     console.log("High        :", fvg.high ?? "-");
     console.log("Low         :", fvg.low ?? "-");
@@ -285,8 +365,9 @@ async function main() {
     // ==========================
     // Market Zone
     // ==========================
+
     const zone = analyzeZone(
-      price,
+      Number(last.close),
       market,
       bos,
       atr14,
@@ -294,26 +375,37 @@ async function main() {
       orderBlock,
       fvg
     );
+
     console.log("");
+
     console.log("Market Zone");
     console.log("----------------------------");
+
     console.log("Zone        :", zone.zone);
     console.log("Location    :", zone.location);
     console.log("Bias        :", zone.bias);
+
     console.log("");
+
     console.log("High        :", zone.high);
     console.log("Low         :", zone.low);
+
     console.log("Equilibrium :", zone.equilibrium);
+
     console.log("");
+
     console.log("Fib 0.618   :", zone.fib618);
     console.log("Fib 0.382   :", zone.fib382);
+
     console.log("");
+
     console.log("Distance    :", zone.distance);
     console.log("Score       :", zone.score + "%");
 
     // ==========================
     // AI CONFLUENCE
     // ==========================
+
     const decision = analyzeConfluence(
       trend,
       rsi14,
@@ -325,61 +417,140 @@ async function main() {
       zone,
       atr14
     );
+
     console.log("");
+
     console.log("AI MARKET DECISION");
     console.log("----------------------------");
-    console.log("Bullish Score :", decision.bullishScore);
-    console.log("Bearish Score :", decision.bearishScore);
-    console.log("Bias          :", decision.bias);
-    console.log("Setup         :", decision.setup);
-    console.log("Confidence    :", decision.confidence + "%");
+
+    console.log(
+      "Bullish Score :",
+      decision.bullishScore
+    );
+
+    console.log(
+      "Bearish Score :",
+      decision.bearishScore
+    );
+
+    console.log(
+      "Bias          :",
+      decision.bias
+    );
+
+    console.log(
+      "Setup         :",
+      decision.setup
+    );
+
+    console.log(
+      "Confidence    :",
+      decision.confidence + "%"
+    );
 
     // ==========================
     // RISK ENGINE
     // ==========================
+
     const risk = analyzeRisk(
       decision,
       orderBlock,
       market,
       fvg,
-      price,
+      Number(last.close),
       atr14
     );
+
     console.log("");
+
     console.log("RISK ENGINE");
     console.log("----------------------------");
+
     console.log("Action        :", risk.action);
     console.log("Reason        :", risk.reason);
     console.log("Risk Level    :", risk.riskLevel);
+
     console.log("");
-    console.log("Entry         :", risk.entry ?? "-");
-    console.log("Stop Loss     :", risk.stopLoss ?? "-");
+
+    console.log(
+      "Entry         :",
+      risk.entry ?? "-"
+    );
+
+    console.log(
+      "Stop Loss     :",
+      risk.stopLoss ?? "-"
+    );
+
     console.log("");
-    console.log("Target TP1    :", risk.target?.tp1 ?? "-");
-    console.log("Target TP2    :", risk.target?.tp2 ?? "-");
-    console.log("Target TP3    :", risk.target?.tp3 ?? "-");
+
+    console.log(
+      "Target TP1    :",
+      risk.target?.tp1 ?? "-"
+    );
+
+    console.log(
+      "Target TP2    :",
+      risk.target?.tp2 ?? "-"
+    );
+
+    console.log(
+      "Target TP3    :",
+      risk.target?.tp3 ?? "-"
+    );
+
     console.log("");
+
     console.log(
       "Risk Reward   :",
-      risk.riskReward > 0 ? risk.riskReward : "-"
+      risk.riskReward > 0
+        ? risk.riskReward
+        : "-"
     );
 
     // ==========================
     // STATE ENGINE
     // ==========================
-    const state = analyzeState(price, risk.entry, atr14);
+
+    const state = analyzeState(
+      Number(last.close),
+      risk.entry,
+      atr14
+    );
+
     console.log("");
     console.log("STATE ENGINE");
     console.log("----------------------------");
-    console.log("State         :", state.state);
-    console.log("Reason        :", state.reason);
-    console.log("Distance      :", state.distance);
-    console.log("ATR           :", state.atr);
-    console.log("Entry         :", state.entry);
+
+    console.log(
+      "State         :",
+      state.state
+    );
+
+    console.log(
+      "Reason        :",
+      state.reason
+    );
+
+    console.log(
+      "Distance      :",
+      state.distance
+    );
+
+    console.log(
+      "ATR           :",
+      state.atr
+    );
+
+    console.log(
+      "Entry         :",
+      state.entry
+    );
 
     // ==========================
     // Execution Engine
     // ==========================
+
     const execution = analyzeExecution(
       decision,
       risk,
@@ -388,13 +559,15 @@ async function main() {
       bos,
       choch,
       data.history,
-      price,
+      Number(last.close),
       atr14,
       state
     );
+
     console.log("");
     console.log("EXECUTION ENGINE");
     console.log("----------------------------");
+
     console.log("Status      :", execution.status ?? "-");
     console.log("Direction   :", execution.direction ?? "-");
     console.log("Entry       :", execution.entry ?? "-");
@@ -403,75 +576,40 @@ async function main() {
     console.log("Risk Reward :", execution.riskReward ?? "-");
     console.log(
       "Confidence  :",
-      execution.confidence != null ? execution.confidence + "%" : "-"
+      execution.confidence != null
+        ? execution.confidence + "%"
+        : "-"
     );
     console.log("Reason      :", execution.reason ?? "-");
     console.log("Version     :", execution.version ?? "-");
 
-    // ==========================
-    // TRADE PLAN
-    // ==========================
     console.log("");
     console.log("Trade Plan");
     console.log("----------------------------");
+
     console.log("Entry         :", execution.entry ?? "-");
     console.log("Stop Loss     :", execution.stopLoss ?? "-");
     console.log("Target        :", execution.target ?? "-");
     console.log(
       "Risk Reward   :",
-      execution.riskReward > 0 ? execution.riskReward : "-"
+      execution.riskReward > 0
+        ? execution.riskReward
+        : "-"
     );
 
-    // ==========================
-    // SUMMARY
-    // ==========================
-    console.log("");
-    console.log("========== SUMMARY ==========");
-    console.log(`Analysis Time : ${new Date().toISOString()}`);
-    console.log(`Symbol        : ${data.symbol}`);
-    console.log(`Current Price : ${price}`);
-    console.log(`Market Bias   : ${decision.bias}`);
-    console.log(`Setup         : ${decision.setup}`);
-    console.log(`Confidence    : ${decision.confidence}%`);
-    console.log(`Risk Level    : ${risk.riskLevel}`);
-    console.log(`Action        : ${execution.status || 'No Action'}`);
-    console.log(`Risk/Reward   : ${execution.riskReward || '-'}`);
-    console.log("====================================");
-
   } catch (err) {
+
     console.log("");
     console.log("========== ERROR ==========");
-    
+
     if (err.response) {
-      console.log("API Error    :", err.response.data);
-      console.log("Status Code  :", err.response.status);
-    } else if (err.code === 'ECONNREFUSED') {
-      console.log("❌ Koneksi ditolak. Pastikan API sedang berjalan.");
-    } else if (err.code === 'ETIMEOUT') {
-      console.log("❌ Timeout. Coba lagi nanti.");
+      console.log(err.response.data);
     } else {
-      console.log("❌ Error:", err.message);
-      console.log("Stack:", err.stack);
+      console.log(err.message);
     }
+
   }
+
 }
 
-// Jalankan
 main();
-
-// Untuk running berulang (opsional)
-// let running = true;
-// async function mainLoop() {
-//   while (running) {
-//     await main();
-//     console.log("\n⏳ Menunggu 60 detik untuk update berikutnya...");
-//     await new Promise(resolve => setTimeout(resolve, 60000));
-//   }
-// }
-// mainLoop();
-
-// process.on('SIGINT', () => {
-//   running = false;
-//   console.log("\n👋 Shutting down...");
-//   process.exit(0);
-// });
