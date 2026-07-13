@@ -1,32 +1,29 @@
 function analyzeZone(
   price,
-  market
+  market,
+  bos,
+  atr
 ) {
 
+  const high =
+    market.swingHigh
+      ? market.swingHigh.price
+      : null;
 
-  if (
-    !market.swingHigh ||
-    !market.swingLow
-  ) {
+  const low =
+    market.swingLow
+      ? market.swingLow.price
+      : null;
+
+
+  if (!high || !low) {
 
     return {
-
       zone: "Unknown",
       score: 0
-
     };
 
   }
-
-
-  const high = Number(
-    market.swingHigh.price
-  );
-
-
-  const low = Number(
-    market.swingLow.price
-  );
 
 
   const range = high - low;
@@ -45,82 +42,125 @@ function analyzeZone(
 
 
 
-  let zone = "Equilibrium";
+  let zone = "Neutral";
 
 
-  let bias = "Neutral";
-
-
-  let score = 50;
-
-
-
-  // =========================
-  // Outside Range Detection
-  // =========================
+  let location = "Inside Range";
 
 
   if (price > high) {
 
-    zone = "Above Premium Range";
-
-    bias = "Potential SELL Zone";
-
-    score = 60;
-
+    location = "Above Range";
+    zone = "Premium";
 
   }
+
   else if (price < low) {
 
+    location = "Below Range";
     zone = "Below Discount Range";
 
-    bias = "Potential Reversal BUY";
-
-    score = 65;
-
-
   }
-
-  // =========================
-  // Inside Range
-  // =========================
 
   else {
 
-
-    if (price >= fib618) {
+    if (price > equilibrium) {
 
       zone = "Premium";
-
-      bias = "SELL Area";
-
-      score = 80;
-
-
-    }
-
-    else if (price <= fib382) {
-
-      zone = "Discount";
-
-      bias = "BUY Area";
-
-      score = 80;
-
 
     }
 
     else {
 
-      zone = "Equilibrium";
-
-      bias = "Wait";
-
-      score = 50;
+      zone = "Discount";
 
     }
 
   }
+
+
+
+  let bias = "Neutral";
+
+
+  if (
+    zone === "Discount" ||
+    zone === "Below Discount Range"
+  ) {
+
+    bias = "Potential Reversal BUY";
+
+  }
+
+
+  if (
+    zone === "Premium" ||
+    zone === "Above Range"
+  ) {
+
+    bias = "Potential SELL Area";
+
+  }
+
+
+
+  // distance ke equilibrium
+
+  const distance =
+    Number(
+      Math.abs(price - equilibrium)
+      .toFixed(2)
+    );
+
+
+
+  // score engine
+
+  let score = 50;
+
+
+  if (bos) {
+
+    if (
+      bos.direction === "Bearish" &&
+      zone.includes("Premium")
+    ) {
+
+      score += 25;
+
+    }
+
+
+    if (
+      bos.direction === "Bullish" &&
+      zone.includes("Discount")
+    ) {
+
+      score += 25;
+
+    }
+
+  }
+
+
+
+  if (atr) {
+
+    if (distance > atr * 3) {
+
+      score -= 10;
+
+    }
+
+  }
+
+
+  if (score > 95)
+    score = 95;
+
+
+  if (score < 0)
+    score = 0;
 
 
 
@@ -128,6 +168,8 @@ function analyzeZone(
 
 
     zone,
+
+    location,
 
     bias,
 
@@ -145,13 +187,22 @@ function analyzeZone(
     fib382,
 
 
-    score
+    distance,
 
+
+    score,
+
+
+    range,
+
+
+    price
 
   };
 
 
 }
+
 
 
 module.exports = {
