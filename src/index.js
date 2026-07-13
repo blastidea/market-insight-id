@@ -636,6 +636,9 @@ console.log("Risk Reward :", execution.riskReward);
 console.log("Confidence  :", execution.confidence + "%");
 console.log("Reason      :", execution.reason);
 console.log("Version     :", execution.version);
+
+}
+    
     
     
    catch (err) {
