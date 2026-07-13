@@ -658,32 +658,18 @@ console.log("Version     :", execution.version ?? "-");
 
     
     console.log("");
-
 console.log("Trade Plan");
 console.log("----------------------------");
 
+console.log("Entry         :", execution.entry ?? "-");
+console.log("Stop Loss     :", execution.stopLoss ?? "-");
+console.log("Target        :", execution.target ?? "-");
 console.log(
-  "Entry         :",
-  risk.entry ?? "-"
+    "Risk Reward   :",
+    execution.riskReward > 0
+        ? execution.riskReward
+        : "-"
 );
-
-console.log(
-  "Stop Loss     :",
-  risk.stopLoss ?? "-"
-);
-
-console.log(
-  "Target        :",
-  risk.target ?? "-"
-);
-
-console.log(
-  "Risk Reward   :",
-  risk.riskReward > 0
-    ? risk.riskReward
-    : "-"
-);
-
     }
     
    catch (err) {
