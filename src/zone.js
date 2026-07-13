@@ -1,10 +1,10 @@
 function analyzeZone(
-  market,
-  price
+  price,
+  market
 ) {
 
+
   if (
-    !market ||
     !market.swingHigh ||
     !market.swingLow
   ) {
@@ -12,11 +12,6 @@ function analyzeZone(
     return {
 
       zone: "Unknown",
-      high: null,
-      low: null,
-      equilibrium: null,
-      fib618: null,
-      fib382: null,
       score: 0
 
     };
@@ -24,99 +19,106 @@ function analyzeZone(
   }
 
 
-  const high =
-    Number(market.swingHigh.price);
+  const high = Number(
+    market.swingHigh.price
+  );
 
 
-  const low =
-    Number(market.swingLow.price);
+  const low = Number(
+    market.swingLow.price
+  );
 
 
-
-  if (high <= low) {
-
-    return {
-
-      zone: "Unknown",
-      high,
-      low,
-      equilibrium: null,
-      fib618: null,
-      fib382: null,
-      score: 0
-
-    };
-
-  }
+  const range = high - low;
 
 
+  const equilibrium =
+    low + (range / 2);
 
-  const range =
-    high - low;
-
-
-
-  // Fibonacci
 
   const fib618 =
-    high - (range * 0.618);
-
-
-  const fib500 =
-    high - (range * 0.5);
+    low + (range * 0.618);
 
 
   const fib382 =
-    high - (range * 0.382);
+    low + (range * 0.382);
 
 
 
   let zone = "Equilibrium";
 
+
+  let bias = "Neutral";
+
+
   let score = 50;
 
 
 
-  // ==========================
-  // Discount Area
-  // bawah 50%
-  // ==========================
+  // =========================
+  // Outside Range Detection
+  // =========================
 
-  if (
-    price < fib500
-  ) {
 
-    zone = "Discount";
-    score += 20;
+  if (price > high) {
+
+    zone = "Above Premium Range";
+
+    bias = "Potential SELL Zone";
+
+    score = 60;
+
+
+  }
+  else if (price < low) {
+
+    zone = "Below Discount Range";
+
+    bias = "Potential Reversal BUY";
+
+    score = 65;
+
 
   }
 
+  // =========================
+  // Inside Range
+  // =========================
+
+  else {
 
 
-  // ==========================
-  // Premium Area
-  // atas 50%
-  // ==========================
+    if (price >= fib618) {
 
-  else if (
-    price > fib500
-  ) {
+      zone = "Premium";
 
-    zone = "Premium";
-    score += 20;
+      bias = "SELL Area";
 
-  }
+      score = 80;
 
 
+    }
 
-  // dekat golden zone
+    else if (price <= fib382) {
 
-  if (
-    price >= fib618 &&
-    price <= fib382
-  ) {
+      zone = "Discount";
 
-    score += 20;
+      bias = "BUY Area";
+
+      score = 80;
+
+
+    }
+
+    else {
+
+      zone = "Equilibrium";
+
+      bias = "Wait";
+
+      score = 50;
+
+    }
 
   }
 
@@ -124,19 +126,27 @@ function analyzeZone(
 
   return {
 
+
     zone,
+
+    bias,
+
 
     high,
 
     low,
 
-    equilibrium: fib500,
+
+    equilibrium,
+
 
     fib618,
 
     fib382,
 
+
     score
+
 
   };
 
@@ -144,9 +154,6 @@ function analyzeZone(
 }
 
 
-
 module.exports = {
-
   analyzeZone
-
 };
