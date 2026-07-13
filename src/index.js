@@ -367,6 +367,7 @@ console.log("Type        :", liquidity.type);
 console.log("Level       :", liquidity.level ?? "-");
 console.log("Status      :", liquidity.status);
 console.log("Strength    :", liquidity.strength);
+    console.log("Candle      :", liquidity.candle ?? "-");
 
 
   } catch (err) {
