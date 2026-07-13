@@ -544,32 +544,6 @@ console.log(
 );
 
 
-console.log("");
-
-console.log("Trade Plan");
-console.log("----------------------------");
-
-console.log(
-  "Entry         :",
-  decision.entry ?? "-"
-);
-
-console.log(
-  "Stop Loss     :",
-  decision.stopLoss ?? "-"
-);
-
-console.log(
-  "Target        :",
-  decision.target ?? "-"
-);
-
-console.log(
-  "Risk Reward   :",
-  decision.rr > 0
-    ? decision.rr
-    : "-"
-);
 
 // ==========================
 // RISK ENGINE
@@ -672,7 +646,33 @@ console.log("Version     :", execution.version ?? "-");
 
 }
     
-    
+    console.log("");
+
+console.log("Trade Plan");
+console.log("----------------------------");
+
+console.log(
+  "Entry         :",
+  decision.entry ?? "-"
+);
+
+console.log(
+  "Stop Loss     :",
+  decision.stopLoss ?? "-"
+);
+
+console.log(
+  "Target        :",
+  decision.target ?? "-"
+);
+
+console.log(
+  "Risk Reward   :",
+  decision.rr > 0
+    ? decision.rr
+    : "-"
+);
+
     
    catch (err) {
 
