@@ -1,87 +1,82 @@
 function analyzeRisk(
   decision,
   orderBlock,
-  liquidity,
-  atr,
-  price
-){
+  market,
+  fvg,
+  lastPrice,
+  atr
+) {
 
   let action = "WAIT CONFIRMATION";
-  let reason = "";
-  let riskLevel = "LOW";
-
+  let reason = "Setup valid but needs confirmation";
 
   let entry = null;
   let stopLoss = null;
-  let target = null;
+
+  let tp1 = null;
+  let tp2 = null;
+  let tp3 = null;
 
 
-  // =========================
-  // VALIDASI SETUP
-  // =========================
+  // ==========================
+  // SELL PLAN
+  // ==========================
 
-  if(!decision){
+  if (
+    decision.bias === "BEARISH" &&
+    orderBlock &&
+    orderBlock.type === "Bearish"
+  ) {
 
-    return {
-      action,
-      reason:"No setup detected",
-      riskLevel:"HIGH"
+    entry = {
+      high: orderBlock.high,
+      low: orderBlock.low
     };
 
-  }
 
-
-  const confidence = decision.confidence || 0;
-
-
-
-  // =========================
-  // SELL SETUP
-  // =========================
-
-  if(decision.bias === "BEARISH"){
-
-
-    if(orderBlock && orderBlock.type === "Bearish"){
-
-
-      entry = {
-        high:orderBlock.high,
-        low:orderBlock.low
-      };
-
-
-      stopLoss =
-        orderBlock.high + (atr * 1.5);
-
-
-      target =
-        price - ((stopLoss-price)*2);
+    // SL di atas OB + ATR protection
+    stopLoss =
+      orderBlock.high + (atr * 1.5);
 
 
 
-      if(confidence >= 70){
+    // TP1 liquidity / swing low
+    if (market.swingLow) {
 
-        action = "EXECUTE SELL PLAN";
+      tp1 = market.swingLow.price;
 
-        reason =
-        "Strong bearish confluence + valid order block";
-
-
-        riskLevel="MEDIUM";
+    }
 
 
-      }else{
+    // TP2 FVG
+    if (fvg && fvg.type === "Bearish") {
 
-        action="WAIT CONFIRMATION";
+      tp2 = fvg.low;
 
-        reason=
-        "Bearish setup detected but confidence weak";
+    }
 
-        riskLevel="MEDIUM";
 
-      }
+    // TP3 swing low sebelumnya
+    if (
+      market.swingLows &&
+      market.swingLows.length > 1
+    ) {
 
+      tp3 =
+        market.swingLows[
+          market.swingLows.length - 2
+        ].price;
+
+    }
+
+
+
+    if (decision.confidence >= 70) {
+
+      action = "EXECUTE SELL PLAN";
+
+      reason =
+      "Strong bearish confluence + valid order block";
 
     }
 
@@ -90,51 +85,62 @@ function analyzeRisk(
 
 
 
+  // ==========================
+  // BUY PLAN
+  // ==========================
 
-  // =========================
-  // BUY SETUP
-  // =========================
-
-  if(decision.bias==="BULLISH"){
-
-
-    if(orderBlock && orderBlock.type==="Bullish"){
-
-
-      entry={
-        high:orderBlock.high,
-        low:orderBlock.low
-      };
+  if (
+    decision.bias === "BULLISH" &&
+    orderBlock &&
+    orderBlock.type === "Bullish"
+  ) {
 
 
-      stopLoss =
-      orderBlock.low - (atr*1.5);
+    entry = {
+      high: orderBlock.high,
+      low: orderBlock.low
+    };
 
 
-      target =
-      price + ((price-stopLoss)*2);
+    stopLoss =
+      orderBlock.low - (atr * 1.5);
 
 
 
-      if(confidence>=70){
+    if (market.swingHigh) {
 
-        action="EXECUTE BUY PLAN";
+      tp1 = market.swingHigh.price;
 
-        reason=
-        "Strong bullish confluence + valid order block";
-
-        riskLevel="MEDIUM";
+    }
 
 
-      }else{
+    if (fvg && fvg.type === "Bullish") {
 
-        action="WAIT CONFIRMATION";
+      tp2 = fvg.high;
 
-        reason=
-        "Need stronger confirmation";
+    }
 
-      }
 
+    if (
+      market.swingHighs &&
+      market.swingHighs.length > 1
+    ) {
+
+      tp3 =
+      market.swingHighs[
+        market.swingHighs.length - 2
+      ].price;
+
+    }
+
+
+
+    if (decision.confidence >= 70) {
+
+      action = "EXECUTE BUY PLAN";
+
+      reason =
+      "Strong bullish confluence + valid order block";
 
     }
 
@@ -142,44 +148,72 @@ function analyzeRisk(
 
 
 
+  // ==========================
+  // RR Calculation
+  // ==========================
 
-  let rr=null;
+
+  let rr = 0;
 
 
-  if(stopLoss && target){
+  if (
+    entry &&
+    stopLoss &&
+    tp1
+  ) {
 
-    let risk=Math.abs(price-stopLoss);
+    let entryPrice =
+      decision.bias === "BEARISH"
+      ? entry.low
+      : entry.high;
 
-    let reward=Math.abs(target-price);
 
-    rr=(reward/risk).toFixed(2);
+    let risk =
+      Math.abs(entryPrice - stopLoss);
+
+
+    let reward =
+      Math.abs(entryPrice - tp1);
+
+
+    rr =
+    Number((reward / risk).toFixed(2));
 
   }
 
 
 
-return {
+  return {
 
- action,
+    action,
 
- reason,
+    reason,
 
- riskLevel,
+    riskLevel:
+      rr >= 2
+      ? "LOW"
+      : "MEDIUM",
 
- entry,
 
- stopLoss,
+    entry,
 
- target,
+    stopLoss,
 
- riskReward:rr
 
-};
+    target: {
+      tp1,
+      tp2,
+      tp3
+    },
 
+
+    riskReward: rr
+
+  };
 
 }
 
 
-module.exports={
- analyzeRisk
+module.exports = {
+  analyzeRisk
 };
