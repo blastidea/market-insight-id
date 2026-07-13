@@ -291,16 +291,24 @@ if(state){
 
 
   // ==========================
-  // FINAL STATUS
-  // ==========================
+// FINAL STATUS
+// ==========================
 
-  if(
-  status !== "CANCEL"
-){
+if(status !== "CANCEL"){
+
   if(candleConfirm){
+
     status = "READY";
+
+  }else{
+
+    status = "WAIT";
+
   }
+
 }
+
+return {
 
 
   return {
