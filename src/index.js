@@ -1,21 +1,25 @@
 const axios = require("axios");
 
-const API_KEY = process.env.TWELVE_API_KEY;
-
-async function getGoldPrice() {
+async function main() {
   try {
-    const url = `https://api.twelvedata.com/price?symbol=XAU/USD&apikey=${API_KEY}`;
+    const apiKey = process.env.TWELVE_API_KEY;
+
+    console.log("API Key:", apiKey ? "TERBACA" : "TIDAK TERBACA");
+
+    const url = `https://api.twelvedata.com/price?symbol=XAU/USD&apikey=${apiKey}`;
 
     const response = await axios.get(url);
 
-    console.log("=== Market Insight Indonesia ===");
-    console.log("System Running...");
-    console.log("XAU/USD Price:", response.data.price);
-    console.log("Data Engine OK");
-  } catch (error) {
-    console.error("ERROR:", error.response?.data || error.message);
+    console.log("Response:");
+    console.log(response.data);
+
+  } catch (err) {
+    if (err.response) {
+      console.log(err.response.data);
+    } else {
+      console.log(err.message);
+    }
   }
 }
 
-getGoldPrice();main();
-
+main();
