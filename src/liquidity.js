@@ -4,23 +4,24 @@ function analyzeLiquidity(candles, market, bos, atr) {
   let level = null;
   let status = "Waiting";
   let strength = "Weak";
+  let candle = null;
 
 
   if (!candles || candles.length < 10) {
+
     return {
       type,
       level,
       status,
-      strength
+      strength,
+      candle
     };
+
   }
 
 
-  const current = candles[0];
-
-  const currentHigh = Number(current.high);
-  const currentLow = Number(current.low);
-  const currentClose = Number(current.close);
+  // Scan 10 candle terbaru
+  const recent = candles.slice(0, 10);
 
 
   const buffer = atr ? atr * 0.5 : 0;
@@ -37,20 +38,33 @@ function analyzeLiquidity(candles, market, bos, atr) {
     const lowLevel = market.swingLow.price;
 
 
-    if (
-      currentLow < lowLevel &&
-      currentClose > lowLevel
-    ) {
+    for (const item of recent) {
 
-      type = "Sell Side";
-      level = lowLevel;
-      status = "Detected";
+      const high = Number(item.high);
+      const low = Number(item.low);
+      const close = Number(item.close);
 
 
       if (
-        lowLevel - currentLow > buffer
+        low < lowLevel &&
+        close > lowLevel
       ) {
-        strength = "Strong";
+
+        type = "Sell Side";
+        level = lowLevel;
+        status = "Detected";
+        candle = item.datetime;
+
+
+        if (
+          lowLevel - low > buffer
+        ) {
+          strength = "Strong";
+        }
+
+
+        break;
+
       }
 
     }
@@ -59,30 +73,44 @@ function analyzeLiquidity(candles, market, bos, atr) {
 
 
 
+
   // ==========================
   // Buy Side Liquidity Sweep
   // Sweep atas swing high
   // ==========================
 
-  if (market.swingHigh) {
+  if (market.swingHigh && type === "None") {
 
     const highLevel = market.swingHigh.price;
 
 
-    if (
-      currentHigh > highLevel &&
-      currentClose < highLevel
-    ) {
+    for (const item of recent) {
 
-      type = "Buy Side";
-      level = highLevel;
-      status = "Detected";
+      const high = Number(item.high);
+      const low = Number(item.low);
+      const close = Number(item.close);
 
 
       if (
-        currentHigh - highLevel > buffer
+        high > highLevel &&
+        close < highLevel
       ) {
-        strength = "Strong";
+
+        type = "Buy Side";
+        level = highLevel;
+        status = "Detected";
+        candle = item.datetime;
+
+
+        if (
+          high - highLevel > buffer
+        ) {
+          strength = "Strong";
+        }
+
+
+        break;
+
       }
 
     }
@@ -96,7 +124,8 @@ function analyzeLiquidity(candles, market, bos, atr) {
     type,
     level,
     status,
-    strength
+    strength,
+    candle
 
   };
 
