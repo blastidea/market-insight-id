@@ -58,24 +58,36 @@ function analyzeRisk(
 
   }
 
+if(decision.confidence < 60){
 
+return {
+
+action:"WAIT CONFIRMATION",
+reason:"Confidence below threshold",
+riskLevel:"LOW",
+entry:null,
+stopLoss:null,
+
+target:{
+tp1:null,
+tp2:null,
+tp3:null
+},
+
+riskReward:0
+};
+
+}
 
   // ==========================
   // BEARISH SELL PLAN
   // ==========================
 
   if(decision.bias === "BEARISH") {
-
-
     action = "EXECUTE SELL PLAN";
-
     reason =
     "Strong bearish confluence + valid order block";
-
-
     riskLevel = "MEDIUM";
-
-
 
     entry = {
 
@@ -86,11 +98,8 @@ function analyzeRisk(
     };
 
 
-
     let entryPrice =
       orderBlock.low;
-
-
 
     // SL ABOVE OB + ATR BUFFER
 
@@ -154,15 +163,10 @@ function analyzeRisk(
 
     }
 
-
-
-
     // remove duplicate
 
     targets =
     [...new Set(targets)];
-
-
 
     // sort nearest to farthest
 
@@ -170,15 +174,9 @@ function analyzeRisk(
       (a,b)=>b-a
     );
 
-
-
-
     let valid=[];
 
-
-
     targets.forEach(t=>{
-
 
       let reward =
       Math.abs(
@@ -398,31 +396,17 @@ function analyzeRisk(
   // RESULT
   // ==========================
 
-
   return {
 
-
     action,
-
     reason,
-
     riskLevel,
-
-
     entry,
-
-
     stopLoss,
-
-
     target:{
-
       tp1,
-
       tp2,
-
       tp3
-
     },
 
 
