@@ -38,6 +38,11 @@ const {
   analyzeConfluence
 } = require("./confluence");
 
+const {
+  analyzeRisk
+} = require("./risk");
+
+
 async function main() {
 
   try {
@@ -549,6 +554,43 @@ console.log(
   "Risk Reward   :",
   decision.rr
 );
+
+
+// ==========================
+// RISK
+// ==========================
+
+
+
+const risk = analyzeRisk(
+  decision.confidence,
+  decision.rr,
+  decision.bias,
+  decision.setup
+);
+
+
+console.log("");
+
+console.log("RISK ENGINE");
+console.log("----------------------------");
+
+console.log(
+  "Action        :",
+  risk.action
+);
+
+console.log(
+  "Reason        :",
+  risk.reason
+);
+
+console.log(
+  "Risk Level    :",
+  risk.riskLevel
+);
+
+
     
     
   } catch (err) {
