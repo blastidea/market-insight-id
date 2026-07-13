@@ -653,23 +653,23 @@ console.log("----------------------------");
 
 console.log(
   "Entry         :",
-  decision.entry ?? "-"
+  risk.entry ?? "-"
 );
 
 console.log(
   "Stop Loss     :",
-  decision.stopLoss ?? "-"
+  risk.stopLoss ?? "-"
 );
 
 console.log(
   "Target        :",
-  decision.target ?? "-"
+  risk.target ?? "-"
 );
 
 console.log(
   "Risk Reward   :",
-  decision.rr > 0
-    ? decision.rr
+  risk.riskReward > 0
+    ? risk.riskReward
     : "-"
 );
 
