@@ -613,49 +613,32 @@ console.log("Risk Reward   :", risk.riskReward);
 
 const execution = analyzeExecution(
   decision,
+  risk,
   orderBlock,
   liquidity,
   bos,
   choch,
-  decision,
   data.history,
   Number(last.close),
   atr14
 );
 
 
-console.log("");
-
-console.log("EXECUTION ENGINE");
+console.log("EXECUTION ENGINE v1.3+");
 console.log("----------------------------");
 
-console.log(
-  "Status      :",
-  execution.status
-);
-
-console.log(
-  "Reason      :",
-  execution.reason
-);
-
-console.log(
-  "Entry       :",
-  execution.entry ?? "-"
-);
-
-console.log(
-  "Distance    :",
-  execution.distance ?? "-"
-);
-
-console.log(
-  "Version     :",
-  execution.version
-);
+console.log("Status      :", execution.status);
+console.log("Direction   :", execution.direction);
+console.log("Entry       :", execution.entry);
+console.log("Stop Loss   :", execution.stopLoss);
+console.log("Target      :", execution.target);
+console.log("Risk Reward :", execution.riskReward);
+console.log("Confidence  :", execution.confidence + "%");
+console.log("Reason      :", execution.reason);
+console.log("Version     :", execution.version);
     
     
-  } catch (err) {
+   catch (err) {
 
 
     console.log("");
