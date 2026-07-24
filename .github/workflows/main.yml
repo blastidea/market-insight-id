@@ -80,7 +80,7 @@ jobs:
         if: always() && env.HAS_ENTRY == 'true'
         uses: appleboy/telegram-action@master
         with:
-          to: ${{ secrets.TELEGRAM_CHAT_ID }}
+          to: ${{ secrets.TELEGRAM_CHANNEL_ID }}
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           message: |
             📊 MARKET XAUUSD
@@ -93,7 +93,7 @@ jobs:
         if: always() && env.HAS_ENTRY == 'false' && env.HAS_ORDERBLOCK == 'true'
         uses: appleboy/telegram-action@master
         with:
-          to: ${{ secrets.TELEGRAM_CHAT_ID }}
+          to: ${{ secrets.TELEGRAM_CHANNEL_ID }}
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           message: |
             📊 MARKET XAUUSD
