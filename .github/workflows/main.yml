@@ -136,7 +136,7 @@ jobs:
           message: |
             📊 XAUUSD | ${{ env.PRICE }} | ${{ env.TREND }}
             
-            📊 FAIR VALUE GAP
+          
             ${{ env.FVG }}
             
             ${{ env.AIDECISION }}
