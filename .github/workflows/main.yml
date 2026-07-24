@@ -30,7 +30,7 @@ jobs:
           npm start 2>&1 | tee output.txt
           
           # EKSTRAK HARGA (ambil dari Realtime Price)
-          PRICE=$(grep -A1 "Realtime Price" output.txt | tail -1 | awk '{print $2}')
+          PRICE=$(grep "Price" output.txt | head -1 | awk '{print $2}')
           TREND=$(grep "Trend" output.txt | head -1 | awk '{print $2, $3}')
           RSI=$(grep "RSI14" output.txt | head -1 | awk '{print $2}')
           echo "PRICE=$PRICE" >> $GITHUB_ENV
@@ -69,6 +69,14 @@ jobs:
           cat risk.txt >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
           
+          # EKSTRAK ACTION (BUY/SELL PLAN)
+          ACTION=$(grep "Action        :" risk.txt | head -1 | sed 's/Action        : //')
+          echo "ACTION=$ACTION" >> $GITHUB_ENV
+          
+          # EKSTRAK REASON (dari RISK ENGINE)
+          REASON=$(grep "Reason        :" risk.txt | head -1 | sed 's/Reason        : //')
+          echo "REASON=$REASON" >> $GITHUB_ENV
+          
           # CEK ADA ENTRY?
           if grep -q "Entry         : -" risk.txt; then
             echo "HAS_ENTRY=false" >> $GITHUB_ENV
@@ -102,13 +110,12 @@ jobs:
           message: |
             📊 XAUUSD | ${{ env.PRICE }} | ${{ env.TREND }}
             
-            🎯 ORDER BLOCK
             ${{ env.ORDERBLOCK }}
             
-            ⚡ SELL PLAN
+            ⚡ ${{ env.ACTION }}
             ${{ env.RISK }}
             
-            📌 Reason: Risk plan valid | OB valid | BOS confirmed
+            📌 Reason: ${{ env.REASON }}
             ⏰ ${{ env.CURRENT_TIME }} WIB
 
       - name: Kirim NOTIFIKASI (TIDAK ADA ENTRY, TAPI ADA OB)
@@ -120,7 +127,6 @@ jobs:
           message: |
             📊 XAUUSD | ${{ env.PRICE }} | ${{ env.TREND }}
             
-            🎯 ORDER BLOCK
             ${{ env.ORDERBLOCK }}
             
             ${{ env.AIDECISION }}
@@ -136,7 +142,6 @@ jobs:
           message: |
             📊 XAUUSD | ${{ env.PRICE }} | ${{ env.TREND }}
             
-          
             ${{ env.FVG }}
             
             ${{ env.AIDECISION }}
