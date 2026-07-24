@@ -21,26 +21,41 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Run Market Insight & Ekstrak Risk Engine
+      - name: Run Market Insight & Ekstrak Ringkasan
         id: market
         env:
           TWELVE_API_KEY: ${{ secrets.TWELVE_API_KEY }}
         run: |
           npm start 2>&1 | tee output.txt
           {
-            sed -n '/RISK ENGINE/,/Risk Reward/p' output.txt
+            echo "📊 ORDER BLOCK"
+            echo "----------------------------"
+            sed -n '/Order Block/,/FVG Strength/p' output.txt | head -12
             echo ""
-            sed -n '/Status      : WAIT/,/Reason      : /p' output.txt | head -2
-          } > risk.txt
-          echo "RISK<<EOF" >> $GITHUB_ENV
-          cat risk.txt >> $GITHUB_ENV
+            echo "🎯 AI DECISION"
+            echo "----------------------------"
+            sed -n '/AI MARKET DECISION/,/Confidence/p' output.txt
+            echo ""
+            echo "⚡ EXECUTION"
+            echo "----------------------------"
+            sed -n '/RISK ENGINE/,/Risk Reward/p' output.txt
+          } > summary.txt
+          echo "SUMMARY<<EOF" >> $GITHUB_ENV
+          cat summary.txt >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
+          
+          # Cek apakah ada Entry (bukan "-")
+          if grep -q "Entry         : -" summary.txt; then
+            echo "HAS_ENTRY=false" >> $GITHUB_ENV
+          else
+            echo "HAS_ENTRY=true" >> $GITHUB_ENV
+          fi
 
       - name: Dapatkan waktu
         run: echo "CURRENT_TIME=$(date +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_ENV
 
-      - name: Kirim Risk Engine ke Telegram
-        if: always()
+      - name: Kirim Ringkasan ke Telegram (HANYA JIKA ADA ENTRY)
+        if: always() && env.HAS_ENTRY == 'true'
         uses: appleboy/telegram-action@master
         with:
           to: ${{ secrets.TELEGRAM_CHAT_ID }}
@@ -49,6 +64,5 @@ jobs:
             📊 MARKET INSIGHT INDONESIA
             
             ⏰ Waktu: ${{ env.CURRENT_TIME }}
-            ✅ Status: ${{ job.status }}
             
-            ${{ env.RISK }}
+            ${{ env.SUMMARY }}
