@@ -2,7 +2,8 @@ name: Market Insight Indonesia
 
 on:
   schedule:
-    - cron: "*/10 * * * *"
+    - cron: "1 4-23 * * 1-5"   # Senin-Jumat, jam 04:01 - 23:01
+    - cron: "1 0-1 * * 6"      # Sabtu, jam 00:01 - 01:01
   workflow_dispatch:
 
 jobs:
@@ -63,7 +64,6 @@ jobs:
           # Cek apakah ada Entry di RISK ENGINE (bukan "-")
           if grep -q "Entry         : -" risk.txt; then
             echo "HAS_ENTRY=false" >> $GITHUB_ENV
-            # Cek apakah Order Block ada isinya (bukan "-")
             if grep -q "Zone High   : -" orderblock.txt; then
               echo "HAS_ORDERBLOCK=false" >> $GITHUB_ENV
             else
