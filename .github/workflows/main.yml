@@ -29,23 +29,35 @@ jobs:
         run: |
           npm start 2>&1 | tee output.txt
           
-          # Ekstrak ORDER BLOCK atau FVG (kalo Order Block kosong)
+          # EKSTRAK HARGA & TREND
+          PRICE=$(grep "Price" output.txt | head -1 | awk '{print $2}')
+          TREND=$(grep "Trend" output.txt | head -1 | awk '{print $2, $3}')
+          RSI=$(grep "RSI14" output.txt | head -1 | awk '{print $2}')
+          echo "PRICE=$PRICE" >> $GITHUB_ENV
+          echo "TREND=$TREND" >> $GITHUB_ENV
+          echo "RSI=$RSI" >> $GITHUB_ENV
+          
+          # EKSTRAK ORDER BLOCK
           {
-            echo "📊 ORDER BLOCK / FVG"
+            echo "📊 ORDER BLOCK"
             echo "----------------------------"
-            if grep -q "Zone High   : 0" output.txt || grep -q "Status      : Not Found" output.txt; then
-              # Kalo Order Block kosong, ambil FVG
-              sed -n '/Fair Value Gap/,/Datetime/p' output.txt | head -10
-            else
-              # Kalo ada, ambil Order Block
-              sed -n '/Order Block/,/FVG Strength/p' output.txt | head -12
-            fi
+            sed -n '/Order Block/,/FVG Strength/p' output.txt | head -12
           } > orderblock.txt
           echo "ORDERBLOCK<<EOF" >> $GITHUB_ENV
           cat orderblock.txt >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
           
-          # Ekstrak AI DECISION
+          # EKSTRAK FVG (kalo OB kosong)
+          {
+            echo "📊 FAIR VALUE GAP"
+            echo "----------------------------"
+            sed -n '/Fair Value Gap/,/Datetime/p' output.txt | head -10
+          } > fvg.txt
+          echo "FVG<<EOF" >> $GITHUB_ENV
+          cat fvg.txt >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+          
+          # EKSTRAK AI DECISION
           {
             echo "🎯 AI DECISION"
             echo "----------------------------"
@@ -55,58 +67,86 @@ jobs:
           cat aidecision.txt >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
           
-          # Ekstrak RISK ENGINE (Executive Summary)
+          # EKSTRAK RISK ENGINE (simple)
           {
-            echo "⚡ EXECUTIVE SUMMARY"
+            echo "⚡ SELL PLAN"
             echo "----------------------------"
             sed -n '/RISK ENGINE/,/Risk Reward/p' output.txt
-            echo ""
-            sed -n '/Status      : WAIT/,/Reason      : /p' output.txt | head -2
           } > risk.txt
           echo "RISK<<EOF" >> $GITHUB_ENV
           cat risk.txt >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
           
-          # Cek apakah ada Entry di RISK ENGINE (bukan "-")
+          # CEK ADA ENTRY?
           if grep -q "Entry         : -" risk.txt; then
             echo "HAS_ENTRY=false" >> $GITHUB_ENV
-            # Cek apakah Order Block ada isinya (bukan "0" atau "Not Found")
-            if grep -q "Zone High   : 0" orderblock.txt || grep -q "Status      : Not Found" orderblock.txt; then
-              echo "HAS_ORDERBLOCK=false" >> $GITHUB_ENV
-            else
-              echo "HAS_ORDERBLOCK=true" >> $GITHUB_ENV
-            fi
           else
             echo "HAS_ENTRY=true" >> $GITHUB_ENV
+          fi
+          
+          # CEK ADA ORDER BLOCK?
+          if grep -q "Zone High   : 0" orderblock.txt || grep -q "Status      : Not Found" orderblock.txt; then
+            echo "HAS_OB=false" >> $GITHUB_ENV
+          else
+            echo "HAS_OB=true" >> $GITHUB_ENV
+          fi
+          
+          # CEK ADA FVG?
+          if grep -q "High        : 0" fvg.txt || grep -q "Status      : Not Found" fvg.txt; then
+            echo "HAS_FVG=false" >> $GITHUB_ENV
+          else
+            echo "HAS_FVG=true" >> $GITHUB_ENV
           fi
 
       - name: Dapatkan waktu WIB
         run: echo "CURRENT_TIME=$(TZ=Asia/Jakarta date +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_ENV
 
-      - name: Kirim RISK ENGINE (kalo ada Entry)
+      - name: Kirim NOTIFIKASI (ADA ENTRY)
         if: always() && env.HAS_ENTRY == 'true'
         uses: appleboy/telegram-action@master
         with:
           to: ${{ secrets.TELEGRAM_CHANNEL_ID }}
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           message: |
-            📊 MARKET XAUUSD
+            📊 XAUUSD | ${{ env.PRICE }} | ${{ env.TREND }}
             
-            ⏰ Waktu: ${{ env.CURRENT_TIME }} WIB
+            🎯 ORDER BLOCK
+            ${{ env.ORDERBLOCK }}
             
+            ⚡ SELL PLAN
             ${{ env.RISK }}
+            
+            📌 Reason: Risk plan valid | OB valid | BOS confirmed
+            ⏰ ${{ env.CURRENT_TIME }} WIB
 
-      - name: Kirim ORDER BLOCK + AI DECISION (kalo ga ada Entry tapi ada Order Block/FVG)
-        if: always() && env.HAS_ENTRY == 'false' && env.HAS_ORDERBLOCK == 'true'
+      - name: Kirim NOTIFIKASI (TIDAK ADA ENTRY, TAPI ADA OB)
+        if: always() && env.HAS_ENTRY == 'false' && env.HAS_OB == 'true'
         uses: appleboy/telegram-action@master
         with:
           to: ${{ secrets.TELEGRAM_CHANNEL_ID }}
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           message: |
-            📊 MARKET XAUUSD
+            📊 XAUUSD | ${{ env.PRICE }} | ${{ env.TREND }}
             
-            ⏰ Waktu: ${{ env.CURRENT_TIME }} WIB
-            
+            🎯 ORDER BLOCK
             ${{ env.ORDERBLOCK }}
             
             ${{ env.AIDECISION }}
+            
+            ⏰ ${{ env.CURRENT_TIME }} WIB
+
+      - name: Kirim NOTIFIKASI (TIDAK ADA ENTRY, OB KOSONG, TAPI ADA FVG)
+        if: always() && env.HAS_ENTRY == 'false' && env.HAS_OB == 'false' && env.HAS_FVG == 'true'
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_CHANNEL_ID }}
+          token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          message: |
+            📊 XAUUSD | ${{ env.PRICE }} | ${{ env.TREND }}
+            
+            📊 FAIR VALUE GAP
+            ${{ env.FVG }}
+            
+            ${{ env.AIDECISION }}
+            
+            ⏰ ${{ env.CURRENT_TIME }} WIB
