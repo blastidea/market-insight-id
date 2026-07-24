@@ -21,17 +21,25 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Run Market Insight & Simpan Output
+      - name: Run Market Insight & Ekstrak Risk Engine
         id: market
         env:
           TWELVE_API_KEY: ${{ secrets.TWELVE_API_KEY }}
         run: |
           npm start 2>&1 | tee output.txt
+          {
+            sed -n '/RISK ENGINE/,/Risk Reward/p' output.txt
+            echo ""
+            sed -n '/Status      : WAIT/,/Reason      : /p' output.txt | head -2
+          } > risk.txt
+          echo "RISK<<EOF" >> $GITHUB_ENV
+          cat risk.txt >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
       - name: Dapatkan waktu
         run: echo "CURRENT_TIME=$(date +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_ENV
 
-      - name: Kirim file hasil analisis ke Telegram
+      - name: Kirim Risk Engine ke Telegram
         if: always()
         uses: appleboy/telegram-action@master
         with:
@@ -42,8 +50,5 @@ jobs:
             
             ⏰ Waktu: ${{ env.CURRENT_TIME }}
             ✅ Status: ${{ job.status }}
-            📁 Branch: ${{ github.ref_name }}
-            📂 File: output.txt
             
-            🔗 Detail: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          document: output.txt
+            ${{ env.RISK }}
