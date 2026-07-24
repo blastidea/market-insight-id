@@ -22,6 +22,22 @@ jobs:
         run: npm install
 
       - name: Run Market Insight
+        id: market
         env:
           TWELVE_API_KEY: ${{ secrets.TWELVE_API_KEY }}
         run: npm start
+
+      - name: Kirim notifikasi ke Telegram
+        if: always()
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.469295315 }}
+          token: ${{ secrets.8948902097:AAGgV4Iy9_eqx6L85LuTy5VAidlyJIOGwHM }}
+          message: |
+            📊 Market Insight Indonesia
+            
+            ✅ Status: ${{ job.status }}
+            🕐 Waktu: $(date '+%Y-%m-%d %H:%M:%S')
+            📁 Branch: ${{ github.ref_name }}
+            
+            🔗 Detail: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
