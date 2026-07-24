@@ -21,26 +21,29 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Run Market Insight
+      - name: Run Market Insight & Simpan Output
         id: market
         env:
           TWELVE_API_KEY: ${{ secrets.TWELVE_API_KEY }}
-        run: npm start
+        run: |
+          npm start 2>&1 | tee output.txt
 
       - name: Dapatkan waktu
         run: echo "CURRENT_TIME=$(date +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_ENV
 
-      - name: Kirim notifikasi ke Telegram
+      - name: Kirim file hasil analisis ke Telegram
         if: always()
         uses: appleboy/telegram-action@master
         with:
           to: ${{ secrets.TELEGRAM_CHAT_ID }}
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           message: |
-            📊 Market Insight Indonesia
+            📊 MARKET INSIGHT INDONESIA
             
+            ⏰ Waktu: ${{ env.CURRENT_TIME }}
             ✅ Status: ${{ job.status }}
-            🕐 Waktu: ${{ env.CURRENT_TIME }}
             📁 Branch: ${{ github.ref_name }}
+            📂 File: output.txt
             
             🔗 Detail: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          document: output.txt
