@@ -21,32 +21,54 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Run Market Insight & Ekstrak Ringkasan
+      - name: Run Market Insight & Ekstrak
         id: market
         env:
           TWELVE_API_KEY: ${{ secrets.TWELVE_API_KEY }}
         run: |
           npm start 2>&1 | tee output.txt
+          
+          # Ekstrak ORDER BLOCK
           {
             echo "📊 ORDER BLOCK"
             echo "----------------------------"
             sed -n '/Order Block/,/FVG Strength/p' output.txt | head -12
-            echo ""
+          } > orderblock.txt
+          echo "ORDERBLOCK<<EOF" >> $GITHUB_ENV
+          cat orderblock.txt >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+          
+          # Ekstrak AI DECISION
+          {
             echo "🎯 AI DECISION"
             echo "----------------------------"
             sed -n '/AI MARKET DECISION/,/Confidence/p' output.txt
-            echo ""
-            echo "⚡ EXECUTION"
-            echo "----------------------------"
-            sed -n '/RISK ENGINE/,/Risk Reward/p' output.txt
-          } > summary.txt
-          echo "SUMMARY<<EOF" >> $GITHUB_ENV
-          cat summary.txt >> $GITHUB_ENV
+          } > aidecision.txt
+          echo "AIDECISION<<EOF" >> $GITHUB_ENV
+          cat aidecision.txt >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
           
-          # Cek apakah ada Entry (bukan "-")
-          if grep -q "Entry         : -" summary.txt; then
+          # Ekstrak RISK ENGINE (Executive Summary)
+          {
+            echo "⚡ EXECUTIVE SUMMARY"
+            echo "----------------------------"
+            sed -n '/RISK ENGINE/,/Risk Reward/p' output.txt
+            echo ""
+            sed -n '/Status      : WAIT/,/Reason      : /p' output.txt | head -2
+          } > risk.txt
+          echo "RISK<<EOF" >> $GITHUB_ENV
+          cat risk.txt >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+          
+          # Cek apakah ada Entry di RISK ENGINE (bukan "-")
+          if grep -q "Entry         : -" risk.txt; then
             echo "HAS_ENTRY=false" >> $GITHUB_ENV
+            # Cek apakah Order Block ada isinya (bukan "-")
+            if grep -q "Zone High   : -" orderblock.txt; then
+              echo "HAS_ORDERBLOCK=false" >> $GITHUB_ENV
+            else
+              echo "HAS_ORDERBLOCK=true" >> $GITHUB_ENV
+            fi
           else
             echo "HAS_ENTRY=true" >> $GITHUB_ENV
           fi
@@ -54,7 +76,7 @@ jobs:
       - name: Dapatkan waktu
         run: echo "CURRENT_TIME=$(date +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_ENV
 
-      - name: Kirim Ringkasan ke Telegram (HANYA JIKA ADA ENTRY)
+      - name: Kirim RISK ENGINE (kalo ada Entry)
         if: always() && env.HAS_ENTRY == 'true'
         uses: appleboy/telegram-action@master
         with:
@@ -65,4 +87,19 @@ jobs:
             
             ⏰ Waktu: ${{ env.CURRENT_TIME }}
             
-            ${{ env.SUMMARY }}
+            ${{ env.RISK }}
+
+      - name: Kirim ORDER BLOCK + AI DECISION (kalo ga ada Entry tapi ada Order Block)
+        if: always() && env.HAS_ENTRY == 'false' && env.HAS_ORDERBLOCK == 'true'
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_CHAT_ID }}
+          token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          message: |
+            📊 MARKET INSIGHT INDONESIA
+            
+            ⏰ Waktu: ${{ env.CURRENT_TIME }}
+            
+            ${{ env.ORDERBLOCK }}
+            
+            ${{ env.AIDECISION }}
