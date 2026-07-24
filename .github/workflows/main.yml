@@ -29,11 +29,17 @@ jobs:
         run: |
           npm start 2>&1 | tee output.txt
           
-          # Ekstrak ORDER BLOCK
+          # Ekstrak ORDER BLOCK atau FVG (kalo Order Block kosong)
           {
-            echo "📊 ORDER BLOCK"
+            echo "📊 ORDER BLOCK / FVG"
             echo "----------------------------"
-            sed -n '/Order Block/,/FVG Strength/p' output.txt | head -12
+            if grep -q "Zone High   : 0" output.txt || grep -q "Status      : Not Found" output.txt; then
+              # Kalo Order Block kosong, ambil FVG
+              sed -n '/Fair Value Gap/,/Datetime/p' output.txt | head -10
+            else
+              # Kalo ada, ambil Order Block
+              sed -n '/Order Block/,/FVG Strength/p' output.txt | head -12
+            fi
           } > orderblock.txt
           echo "ORDERBLOCK<<EOF" >> $GITHUB_ENV
           cat orderblock.txt >> $GITHUB_ENV
@@ -64,7 +70,8 @@ jobs:
           # Cek apakah ada Entry di RISK ENGINE (bukan "-")
           if grep -q "Entry         : -" risk.txt; then
             echo "HAS_ENTRY=false" >> $GITHUB_ENV
-            if grep -q "Zone High   : -" orderblock.txt; then
+            # Cek apakah Order Block ada isinya (bukan "0" atau "Not Found")
+            if grep -q "Zone High   : 0" orderblock.txt || grep -q "Status      : Not Found" orderblock.txt; then
               echo "HAS_ORDERBLOCK=false" >> $GITHUB_ENV
             else
               echo "HAS_ORDERBLOCK=true" >> $GITHUB_ENV
@@ -89,7 +96,7 @@ jobs:
             
             ${{ env.RISK }}
 
-      - name: Kirim ORDER BLOCK + AI DECISION (kalo ga ada Entry tapi ada Order Block)
+      - name: Kirim ORDER BLOCK + AI DECISION (kalo ga ada Entry tapi ada Order Block/FVG)
         if: always() && env.HAS_ENTRY == 'false' && env.HAS_ORDERBLOCK == 'true'
         uses: appleboy/telegram-action@master
         with:
