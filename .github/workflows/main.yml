@@ -29,48 +29,40 @@ jobs:
         run: |
           npm start 2>&1 | tee output.txt
           
-          # EKSTRAK HARGA & TREND
-          PRICE=$(grep "Price" output.txt | head -1 | awk '{print $2}')
+          # EKSTRAK HARGA (ambil dari Close di Latest Candle)
+          PRICE=$(grep "Close" output.txt | tail -1 | awk '{print $2}')
           TREND=$(grep "Trend" output.txt | head -1 | awk '{print $2, $3}')
           RSI=$(grep "RSI14" output.txt | head -1 | awk '{print $2}')
           echo "PRICE=$PRICE" >> $GITHUB_ENV
           echo "TREND=$TREND" >> $GITHUB_ENV
           echo "RSI=$RSI" >> $GITHUB_ENV
           
-          # EKSTRAK ORDER BLOCK
+          # EKSTRAK ORDER BLOCK (tanpa echo dobel)
           {
-            echo "📊 ORDER BLOCK"
-            echo "----------------------------"
             sed -n '/Order Block/,/FVG Strength/p' output.txt | head -12
           } > orderblock.txt
           echo "ORDERBLOCK<<EOF" >> $GITHUB_ENV
           cat orderblock.txt >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
           
-          # EKSTRAK FVG (kalo OB kosong)
+          # EKSTRAK FVG (tanpa echo dobel)
           {
-            echo "📊 FAIR VALUE GAP"
-            echo "----------------------------"
             sed -n '/Fair Value Gap/,/Datetime/p' output.txt | head -10
           } > fvg.txt
           echo "FVG<<EOF" >> $GITHUB_ENV
           cat fvg.txt >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
           
-          # EKSTRAK AI DECISION
+          # EKSTRAK AI DECISION (tanpa echo dobel)
           {
-            echo "🎯 AI DECISION"
-            echo "----------------------------"
             sed -n '/AI MARKET DECISION/,/Confidence/p' output.txt
           } > aidecision.txt
           echo "AIDECISION<<EOF" >> $GITHUB_ENV
           cat aidecision.txt >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
           
-          # EKSTRAK RISK ENGINE (simple)
+          # EKSTRAK RISK ENGINE (tanpa echo dobel)
           {
-            echo "⚡ SELL PLAN"
-            echo "----------------------------"
             sed -n '/RISK ENGINE/,/Risk Reward/p' output.txt
           } > risk.txt
           echo "RISK<<EOF" >> $GITHUB_ENV
