@@ -27,6 +27,9 @@ jobs:
           TWELVE_API_KEY: ${{ secrets.TWELVE_API_KEY }}
         run: npm start
 
+      - name: Dapatkan waktu
+        run: echo "CURRENT_TIME=$(date +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_ENV
+
       - name: Kirim notifikasi ke Telegram
         if: always()
         uses: appleboy/telegram-action@master
@@ -37,7 +40,7 @@ jobs:
             📊 Market Insight Indonesia
             
             ✅ Status: ${{ job.status }}
-            🕐 Waktu: $(date '+%Y-%m-%d %H:%M:%S')
+            🕐 Waktu: ${{ env.CURRENT_TIME }}
             📁 Branch: ${{ github.ref_name }}
             
             🔗 Detail: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
